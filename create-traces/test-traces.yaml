@@ -1,0 +1,8 @@
+destinations:
+- www.nzrs.net.nz
+- ns1.dns.net.nz
+- ns4.dns.net.nz
+- ns2.dns.net.nz
+sources:
+- 10650
+- 16669
