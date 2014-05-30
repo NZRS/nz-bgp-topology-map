@@ -1,3 +1,6 @@
 plot-traces/*.png
 plot-traces/*.dot
 download-traces/*.json
+*.pyc
+*.json
+delegated-apnic-latest*
