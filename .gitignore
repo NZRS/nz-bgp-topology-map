@@ -4,3 +4,5 @@ download-traces/*.json
 *.pyc
 *.json
 delegated-apnic-latest*
+nzix-bgp-tables/*.html
+nzix-bgp-tables/*_files
