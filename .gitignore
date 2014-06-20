@@ -3,6 +3,10 @@ plot-traces/*.dot
 download-traces/*.json
 *.pyc
 *.json
+# Input file from APNIC
 delegated-apnic-latest*
+# NZIX text dumps, input files
 nzix-bgp-tables/*.html
-nzix-bgp-tables/*_files
+nzix-bgp-tables/*.txt
+#  These are output files
+nz-trace-destinations/*.tsv
