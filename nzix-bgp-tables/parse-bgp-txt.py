@@ -52,13 +52,15 @@ for ixfile in sys.argv[1:]:
             fields = parse(line)
             if len(fields[1]) > 0 and fields[1][0] == '*':
                 prefix = fields[2].rstrip()
+                if len(prefix) == 0:
+                    prefix = prefixes[-1]['prefix']
                 router = fields[3].rstrip()
                 aspath = list(OrderedDict.fromkeys(fields[5].rstrip().split(' ')))
                 # Remove the last element, it's the status of the prefix
-                aspath.pop
+                aspath.pop()
                 if re.search('/', prefix) == None:
                     prefix = "{0}/24".format(prefix)
-                print "{0} -> {1} : {2}".format(prefix, router, aspath)
+#                print "{0} -> {1} : {2}".format(prefix, router, aspath)
                 prefixes.append( dict(prefix=prefix, router=router, aspath=aspath))
 
         ixviews.append( dict(routeserver=rs, prefixes=prefixes))
