@@ -10,3 +10,5 @@ nzix-bgp-tables/*.html
 nzix-bgp-tables/*.txt
 #  These are output files
 nz-trace-destinations/*.tsv
+# Swap files by vim
+*.swp
