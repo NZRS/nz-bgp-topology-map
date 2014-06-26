@@ -4,24 +4,34 @@ import csv
 
 # apnic|JP|asn|173|1|20020801|allocated
 
+as_country = set()
+as_country.add( 'NZ' )
+as_country.add( 'AU' )
 as_list = {}
+prefix_list = {}
 with open('delegated-apnic-latest', 'rb') as csvfile:
     csvin = csv.reader(csvfile, delimiter='|')
 
     for row in csvin:
-        if row[-1] == 'allocated' and row[1] == 'NZ' and row[2] == 'asn':
-            as_list[ row[3] ] = True
+        if row[-1] == 'allocated':
+            if row[2] == 'asn' and row[1] in as_country:
+                as_list[ row[3] ] = row[1]
+            if row[2] == 'ipv4' and row[1] == 'NZ':
+                prefix = row[3]
+                mask = 32 - (int(row[4]) - 1).bit_length()
+                prefix = "{0}/{1}".format(row[3], mask)
+                prefix_list[ prefix ] = True
 
-prefix_list = []
 
-with open('prefix2AS-20140527.txt', 'rb') as tsvfile:
-    tsvin = csv.reader(tsvfile, delimiter='\t')
+with open('as-from-rir.tsv', 'wb') as tsvfile:
+    tsvout = csv.writer(tsvfile, delimiter='\t', lineterminator='\n')
 
-    for prefix in tsvin:
-        if as_list.has_key( prefix[1] ):
-            prefix_list += [ prefix ]
+    for asn in as_list.iteritems():
+        tsvout.writerow(asn)
 
-with open('nz-networks.tsv', 'wb') as tsvfile:
-    tsvout = csv.writer(tsvfile, delimiter='\t')
+with open('nz-networks-from-rir.tsv', 'wb') as tsvfile:
+    tsvout = csv.writer(tsvfile, delimiter='\t', lineterminator='\n')
 
-    tsvout.writerows(prefix_list)
+    for p in prefix_list.keys():
+        tsvout.writerow([p])
+
