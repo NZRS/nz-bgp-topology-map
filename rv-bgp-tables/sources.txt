@@ -1,0 +1,13 @@
+http://archive.routeviews.org/bgpdata
+http://archive.routeviews.org/route-views3/bgpdata
+http://archive.routeviews.org/route-views4/bgpdata
+http://archive.routeviews.org/route-views.eqix/bgpdata
+http://archive.routeviews.org/route-views.isc/bgpdata
+http://archive.routeviews.org/route-views.kixp/bgpdata
+http://archive.routeviews.org/route-views.jinx/bgpdata
+http://archive.routeviews.org/route-views.linx/bgpdata
+http://archive.routeviews.org/route-views.nwax/bgpdata
+http://archive.routeviews.org/route-views.telxatl/bgpdata
+http://archive.routeviews.org/route-views.wide/bgpdata
+http://archive.routeviews.org/route-views.sydney/bgpdata
+http://archive.routeviews.org/route-views.saopaulo/bgpdata
