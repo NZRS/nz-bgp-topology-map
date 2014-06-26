@@ -45,5 +45,9 @@ with open('../nz-trace-destinations/as-from-rir.tsv', 'rb') as as_info_file:
                 G.node[ asn[0] ]['group'] = 'unk'
                 G.node[ asn[0] ]['stroke'] = 3
 
+# Go over the list of nodes and add the degree attribute
+for node_deg in G.degree_iter():
+    G.node[ node_deg[0] ]['degree'] = node_deg[1]
+
 json_dump = json_graph.node_link_data(G)
 json.dump(json_dump, open('nz-bgp-map.json', 'w'))
