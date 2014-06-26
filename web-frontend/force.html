@@ -8,6 +8,12 @@
   stroke-width: 1.5px;
 }
 
+.endnode {
+  opacity: .6;
+  stroke: #fff;
+  stroke-width: 1px;
+}
+
 .link {
   stroke: #999;
   stroke-opacity: .6;
@@ -70,7 +76,8 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
   var node = svg.selectAll(".node")
       .data(graph.nodes)
     .enter().append("circle")
-      .attr("class", "node")
+      .attr("class", function(d) { if (d.degree == 1) { return "endnode"; } else
+      return "node"; })
 //      .attr("r", function(d) { return 8+10*(Math.log(d.degree) / Math.LN10) })
       .attr("r", function(d) { return d.radius; })
       .style("stroke-width", function(d) { return d.stroke })
