@@ -6,10 +6,16 @@
 .node {
   stroke: #fff;
   stroke-width: 1.5px;
+  opacity: .8;
+}
+
+.highlight {
+  stroke: yellow;
+  opacity: 1.0;
 }
 
 .endnode {
-  opacity: .6;
+  opacity: .5;
   stroke: #fff;
   stroke-width: 1px;
 }
@@ -23,6 +29,18 @@
 <body>
 <script src="/d3/d3.min.js"></script>
 <script>
+
+function zoom() {
+    svg.attr("transform", "translate("+ d3.event.translate + ")scale(" + d3.event.scale +")");
+}
+
+function highlight_node(d) {
+    d3.select(this).classed("highlight", true);
+}
+
+function clear_node(d) {
+    d3.select(this).classed("highlight", false);
+}
 
 var width = 2200,
     height = 1100;
@@ -46,9 +64,6 @@ var svg = d3.select("body").append("svg")
     .call(d3.behavior.zoom().scaleExtent([1,8]).on("zoom", zoom))
     .append("g");
 
-function zoom() {
-    svg.attr("transform", "translate("+ d3.event.translate + ")scale(" + d3.event.scale +")");
-}
 
 d3.json("data/nz-bgp-map.json", function(error, graph) {
   force
@@ -82,6 +97,8 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
       .attr("r", function(d) { return d.radius; })
       .style("stroke-width", function(d) { return d.stroke })
       .style("fill", function(d) { return color(d.group); })
+      .on("mouseover", highlight_node)
+      .on("mouseout", clear_node)
       .call(force.drag);
 
   node.append("title")
