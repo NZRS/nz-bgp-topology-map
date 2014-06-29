@@ -5,11 +5,11 @@
 
 .node {
   stroke: #fff;
-  stroke-width: 1.5px;
-  opacity: .8;
+  stroke-width: 2px;
+  opacity: .7;
 }
 
-.highlight {
+.highlight_node {
   stroke: yellow;
   opacity: 1.0;
 }
@@ -25,6 +25,11 @@
   stroke-opacity: .6;
 }
 
+.highlight_link {
+  stroke: #000;
+  stroke-opacity: 1.0;
+}
+
 </style>
 <body>
 <script src="/d3/d3.min.js"></script>
@@ -32,14 +37,6 @@
 
 function zoom() {
     svg.attr("transform", "translate("+ d3.event.translate + ")scale(" + d3.event.scale +")");
-}
-
-function highlight_node(d) {
-    d3.select(this).classed("highlight", true);
-}
-
-function clear_node(d) {
-    d3.select(this).classed("highlight", false);
 }
 
 var width = 2200,
@@ -54,6 +51,8 @@ var charge = d3.scale.linear()
     .domain([8, 32])
     .range([20, 3000])
 
+var linksIndex = {};
+
 var force = d3.layout.force()
     .size([width, height]);
 
@@ -66,11 +65,15 @@ var svg = d3.select("body").append("svg")
 
 
 d3.json("data/nz-bgp-map.json", function(error, graph) {
+
   force
       .nodes(graph.nodes)
       .links(graph.links)
 
   var k = Math.sqrt(graph.nodes.length / (width * height));
+
+  // Store additional info about the links for latter use
+  storeLinks(graph);
 
   force
 //    .charge(function(d) { return -Math.pow( Math.sqrt(d.degree), 2.0) })
@@ -113,6 +116,40 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
     node.attr("cx", function(d) { return d.x; })
         .attr("cy", function(d) { return d.y; });
   });
+
 });
+
+function storeLinks(g) {
+    g.links.forEach(function(d) {
+        if (linksIndex[d.source] === undefined) {
+            linksIndex[d.source] = d3.set();
+        }
+
+        if (linksIndex[d.target] === undefined) {
+            linksIndex[d.target] = d3.set();
+        }
+
+        linksIndex[d.source].add([d.target]);
+        linksIndex[d.target].add([d.source]);
+    });
+}
+
+function highlight_node(d) {
+    // Highlight all the nodes linked to current node
+    d3.selectAll("circle").classed("highlight_node", function(o) { return linksIndex[d.index].has(o.index); });
+    // Highlight this node
+    d3.select(this).classed("highlight_node", true);
+    highlight_links(d);
+}
+
+function clear_node(d) {
+//    d3.select(this).classed("highlight_node", false);
+    d3.selectAll("circle").classed("highlight_node", false);
+}
+
+function highlight_links(node) {
+    d3.selectAll(".link").classed("highlight_link", function(o) {
+        if (o.source == node || o.target == node) { return true; }});
+}
 
 </script>
