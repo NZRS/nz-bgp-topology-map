@@ -10,8 +10,9 @@
 }
 
 .highlight_node {
-  stroke: yellow;
+  stroke: black;
   opacity: 1.0;
+  transform: scale(1.2, 1.2);
 }
 
 .endnode {
@@ -30,17 +31,34 @@
   stroke-opacity: 1.0;
 }
 
+.d3-tip {
+    line-height: 1;
+    font-weight: bold;
+    background: green;
+    color: black;
+    opacity: 0.8;
+}
+
+.tip-label {
+    color: Orange;
+}
+
+.tip-info {
+    color: Blue;
+}
+
 </style>
 <body>
 <script src="/d3/d3.min.js"></script>
+<script src="/d3/d3-tip.js"></script>
 <script>
 
 function zoom() {
     svg.attr("transform", "translate("+ d3.event.translate + ")scale(" + d3.event.scale +")");
 }
 
-var width = 2200,
-    height = 1100;
+var width = 2000,
+    height = 800;
 
 // var color = d3.scale.category10();
 var color = d3.scale.ordinal()
@@ -49,7 +67,7 @@ var color = d3.scale.ordinal()
 
 var charge = d3.scale.linear()
     .domain([8, 32])
-    .range([20, 3000])
+    .range([40, 5000])
 
 var linksIndex = {};
 
@@ -63,6 +81,16 @@ var svg = d3.select("body").append("svg")
     .call(d3.behavior.zoom().scaleExtent([1,8]).on("zoom", zoom))
     .append("g");
 
+var tip = d3.tip()
+    .attr('class', 'd3-tip')
+    .offset([-10, 0])
+    .html(function(d) {
+        return "<span class='tip-label'>AS:</span> <span class='tip-info'>" + d.id + "</span><br>" +
+            "<span class='tip-label'>Name: </span> <span class='tip-info'>" + d.name + "</span><br>" +
+            "<span class='tip-label'>Peers: </span> <span class='tip-info'>" + d.degree + "</span>";
+    });
+
+svg.call(tip);
 
 d3.json("data/nz-bgp-map.json", function(error, graph) {
 
@@ -79,9 +107,9 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
 //    .charge(function(d) { return -Math.pow( Math.sqrt(d.degree), 2.0) })
     .charge(function(d) { return -charge(d.radius); })
 //    .linkDistance(function(d) { return 3*Math.sqrt( d.source.degree + d.target.degree ) })
-    .linkDistance(30)
-    .friction(0.9)
-    .gravity(0.4)
+    .linkDistance(15)
+//    .friction(0.9)
+    .gravity(2.5)
     .start();
 
   var link = svg.selectAll(".link")
@@ -104,8 +132,8 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
       .on("mouseout", clear_node)
       .call(force.drag);
 
-  node.append("title")
-      .text(function(d) { return d.name + '(' + d.degree + ')'; });
+//  node.append("title")
+////      .text(function(d) { return d.name + '(' + d.degree + ')'; });
 
   force.on("tick", function() {
     link.attr("x1", function(d) { return d.source.x; })
@@ -140,11 +168,14 @@ function highlight_node(d) {
     // Highlight this node
     d3.select(this).classed("highlight_node", true);
     highlight_links(d);
+    tip.show(d);
 }
 
 function clear_node(d) {
 //    d3.select(this).classed("highlight_node", false);
     d3.selectAll("circle").classed("highlight_node", false);
+    d3.selectAll(".link").classed("highlight_link", false);
+    tip.hide(d);
 }
 
 function highlight_links(node) {
