@@ -15,6 +15,10 @@
   transform: scale(1.2, 1.2);
 }
 
+.fade_node {
+  opacity: 0.2;
+}
+
 .endnode {
   opacity: .5;
   stroke: #fff;
@@ -29,6 +33,10 @@
 .highlight_link {
   stroke: #000;
   stroke-opacity: 1.0;
+}
+
+.fade_link {
+  stroke-opacity: 0.2;
 }
 
 .d3-tip {
@@ -63,7 +71,7 @@ var width = 2000,
 // var color = d3.scale.category10();
 var color = d3.scale.ordinal()
     .domain(["unk", "IX", "AU", "NZ"])
-    .range(["#bcbd22","#ff0000","#b35900", "#000"]);
+    .range(["#bcbd22","red","gold", "black"]);
 
 var charge = d3.scale.linear()
     .domain([8, 32])
@@ -164,16 +172,23 @@ function storeLinks(g) {
 
 function highlight_node(d) {
     // Highlight all the nodes linked to current node
-    d3.selectAll("circle").classed("highlight_node", function(o) { return linksIndex[d.index].has(o.index); });
+    d3.selectAll(".node").classed("highlight_node", function(o) { return linksIndex[d.index].has(o.index); });
+    // Fade all the other nodes
+    d3.selectAll(".node").classed("fade_node", function(o) {
+        return (! linksIndex[d.index].has(o.index));
+    });
     // Highlight this node
-    d3.select(this).classed("highlight_node", true);
+    d3.select(this).classed({"highlight_node": true, "fade_node": false});
+    // Highlight the links
     highlight_links(d);
+    // Activate the information tip
     tip.show(d);
 }
 
 function clear_node(d) {
 //    d3.select(this).classed("highlight_node", false);
-    d3.selectAll("circle").classed("highlight_node", false);
+    d3.selectAll(".node").classed({ "highlight_node": false,
+    "fade_node": false});
     d3.selectAll(".link").classed("highlight_link", false);
     tip.hide(d);
 }
