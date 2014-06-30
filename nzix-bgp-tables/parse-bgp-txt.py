@@ -35,6 +35,20 @@ def make_parser(fieldwidths):
                                                 for fw in fieldwidths)
     return parse
 
+def asdot2asplain(aslist=[]):
+    rv = []
+    # Some of the ASes are 32-bit and represented in adot
+    # format (RFC5396). Converting to asplain
+    for asn in aslist:
+        if re.search('\.', asn):
+            [ high_bits, low_bits ] = asn.split('.')
+            rv.append( str( (int(high_bits) << 16) + int(low_bits)))
+        else:
+            rv.append(asn)
+
+    return rv
+
+
 fieldwidths = (3, 3, 17, 17, 24, 80)
 parse = make_parser(fieldwidths)
 ixviews = []
@@ -55,7 +69,7 @@ for ixfile in sys.argv[1:]:
                 if len(prefix) == 0:
                     prefix = prefixes[-1]['prefix']
                 router = fields[3].rstrip()
-                aspath = list(OrderedDict.fromkeys(fields[5].rstrip().split(' ')))
+                aspath = list(OrderedDict.fromkeys(asdot2asplain(fields[5].rstrip().split(' '))))
                 # Remove the last element, it's the status of the prefix
                 aspath.pop()
                 if re.search('/', prefix) == None:
