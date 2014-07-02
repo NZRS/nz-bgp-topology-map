@@ -40,6 +40,13 @@
   stroke-opacity: 0.2;
 }
 
+.legend {
+    background: white;
+    fill: white;
+    stroke-width: 2;
+    stroke: black;
+}
+
 .d3-tip {
     line-height: 1;
     font-weight: bold;
@@ -60,14 +67,18 @@
 <body>
 <script src="/d3/d3.min.js"></script>
 <script src="/d3/d3-tip.js"></script>
+<script src="/d3/d3.legend.js"></script>
 <script>
 
 function zoom() {
     svg.attr("transform", "translate("+ d3.event.translate + ")scale(" + d3.event.scale +")");
 }
 
-var width = 2000,
-    height = 800;
+var width = 1800,
+    height = 900;
+
+var legend_width = 100,
+    legend_height = 100;
 
 // var color = d3.scale.category10();
 var color = d3.scale.ordinal()
@@ -89,6 +100,15 @@ var svg = d3.select("body").append("svg")
     .append("g")
     .call(d3.behavior.zoom().scaleExtent([1,8]).on("zoom", zoom))
     .append("g");
+
+
+var legend = svg.append("g")
+    .attr("id", "legend")
+    .attr("class", "legend")
+    .attr("x", width - 2*legend_width)
+    .attr("y", height - legend_height)
+    .attr("height", legend_height)
+    .attr("width", legend_width)
 
 var tip = d3.tip()
     .attr('class', 'd3-tip')
@@ -137,6 +157,8 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
 //      .classed('endnode', function(d) { return (d.degree == 1); })
 //      .attr("r", function(d) { return 8+10*(Math.log(d.degree) / Math.LN10) })
       .attr("r", function(d) { return d.radius; })
+      .attr("data-legend", function(d) { return d.country; })
+      .attr("data-legend-color", function(d) { return color(d.country); })
       .style("stroke-width", function(d) { return d.stroke })
       .style("fill", function(d) { return color(d.country); })
       .on("mouseover", highlight_node)
@@ -145,6 +167,13 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
 
 //  node.append("title")
 ////      .text(function(d) { return d.name + '(' + d.degree + ')'; });
+
+  var d3legend = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", "translate(50,50)")
+        .style("font-size", "20px")
+        .attr("data-style-padding",10)
+        .call(d3.legend);
 
   force.on("tick", function() {
     link.attr("x1", function(d) { return d.source.x; })
