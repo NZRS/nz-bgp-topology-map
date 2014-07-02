@@ -7,9 +7,11 @@ from networkx.readwrite import json_graph
 import csv
 import sys
 
-def subsitute_as(asn):
+def substitute_as(asn):
     if as_sub_list.has_key(asn):
         return as_sub_list[asn]
+    else:
+        return asn
 
 # Preload the list of substitute ASNs
 with open('substitute-as.json', 'rb') as sub_as_file:
@@ -31,6 +33,7 @@ for router_entry in nzix_view:
         for prefix in router_entry['prefixes']:
             prev_as = ix_name
             for asn in prefix['aspath']:
+                asn = substitute_as(asn)
                 path.append([ prev_as, asn])
                 prev_as = asn
     except IndexError:
@@ -50,7 +53,7 @@ with open('../data/rv-nz-aspath.json', 'rb') as rv_file:
 
 for aspath in rv_paths['aspath']:
     if len(aspath) > 1:
-        G.add_edges_from( [ [ aspath[i-1], aspath[i] ] for i in range(2, len(aspath)) ])
+        G.add_edges_from( [ [ substitute_as(aspath[i-1]), substitute_as(aspath[i]) ] for i in range(2, len(aspath)) ])
 
 # Add style based on the country
 with open('../data/as-from-rir.tsv', 'rb') as as_info_file:
