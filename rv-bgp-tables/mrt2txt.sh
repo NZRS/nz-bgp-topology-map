@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for rib in */rib.*; do
+for rib in $*; do
     echo $rib
-    /opt/bgpdump/bin/bgpdump -m $rib | cut -d\| -f6,7 >> prefix-aspath.txt
+    /opt/bgpdump/bin/bgpdump -m $rib | cut -d\| -f6,7 >> data/prefix-aspath.txt
 done

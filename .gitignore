@@ -17,4 +17,5 @@ rv-bgp-tables/route-views*
 rv-bgp-tables/bgpdata
 rv-bgp-tables/oix-full-snapshot-latest.dat.bz2
 rv-bgp-tables/prefix-aspath.txt
-
+# Data files
+data/*

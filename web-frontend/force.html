@@ -9,6 +9,12 @@
   opacity: .7;
 }
 
+.endnode {
+  opacity: .5;
+  stroke: #fff;
+  stroke-width: 1px;
+}
+
 .highlight_node {
   stroke: black;
   opacity: 1.0;
@@ -19,11 +25,6 @@
   opacity: 0.2;
 }
 
-.endnode {
-  opacity: .5;
-  stroke: #fff;
-  stroke-width: 1px;
-}
 
 .link {
   stroke: #999;
@@ -70,7 +71,7 @@ var width = 2000,
 
 // var color = d3.scale.category10();
 var color = d3.scale.ordinal()
-    .domain(["unk", "IX", "AU", "NZ"])
+    .domain(["other", "IX", "AU", "NZ"])
     .range(["#bcbd22","red","gold", "black"]);
 
 var charge = d3.scale.linear()
@@ -95,6 +96,7 @@ var tip = d3.tip()
     .html(function(d) {
         return "<span class='tip-label'>AS:</span> <span class='tip-info'>" + d.id + "</span><br>" +
             "<span class='tip-label'>Name: </span> <span class='tip-info'>" + d.name + "</span><br>" +
+            "<span class='tip-label'>Description: </span> <span class='tip-info'>" + d.descr + "</span><br>" +
             "<span class='tip-label'>Peers: </span> <span class='tip-info'>" + d.degree + "</span>";
     });
 
@@ -130,12 +132,13 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
   var node = svg.selectAll(".node")
       .data(graph.nodes)
     .enter().append("circle")
-      .attr("class", function(d) { if (d.degree == 1) { return "endnode"; } else
-      return "node"; })
+//      .attr("class", function(d) { if (d.degree == 1) { return "endnode"; } else
+      .attr("class", 'node')
+//      .classed('endnode', function(d) { return (d.degree == 1); })
 //      .attr("r", function(d) { return 8+10*(Math.log(d.degree) / Math.LN10) })
       .attr("r", function(d) { return d.radius; })
       .style("stroke-width", function(d) { return d.stroke })
-      .style("fill", function(d) { return color(d.group); })
+      .style("fill", function(d) { return color(d.country); })
       .on("mouseover", highlight_node)
       .on("mouseout", clear_node)
       .call(force.drag);

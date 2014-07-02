@@ -1,17 +1,14 @@
 #!/bin/bash
 
-ROUTERS="rs1.ape.nzix.net
-rs2.ape.nzix.net
-rs1.wix.nzix.net
-rs2.wix.nzix.net
-rs1.chix.nzix.net
-rs2.chix.nzix.net
-rs1.hix.nzix.net
-rs2.hix.nzix.net
-rs1.pnix.nzix.net
-rs2.pnix.nzix.net"
+if [ $# != 1 ]; then
+    echo "Usage: $0 routeserver"
+    exit 1
+fi
 
-for router in $ROUTERS; do
-    links -dump "http://nzix.net/cgi-bin/lg.cgi?query=bgp&protocol=IPv4&router=${router}&addr=regexp%20^" > $router.txt 
-done
+# XXX: Validate if the name makes sense
+ROUTESERVER=$1
+
+echo "Fetching from routeserver $ROUTESERVER"
+
+links -dump "http://nzix.net/cgi-bin/lg.cgi?query=bgp&protocol=IPv4&router=${ROUTESERVER}&addr=regexp%20^" > ${ROUTESERVER}.txt 
 

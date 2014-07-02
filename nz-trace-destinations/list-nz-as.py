@@ -6,7 +6,7 @@ import csv
 
 as_country = set()
 as_country.add( 'NZ' )
-as_country.add( 'AU' )
+# as_country.add( 'AU' )
 as_list = {}
 prefix_list = {}
 with open('delegated-apnic-latest', 'rb') as csvfile:
@@ -23,13 +23,13 @@ with open('delegated-apnic-latest', 'rb') as csvfile:
                 prefix_list[ prefix ] = True
 
 
-with open('as-from-rir.tsv', 'wb') as tsvfile:
+with open('../data/as-from-rir.tsv', 'wb') as tsvfile:
     tsvout = csv.writer(tsvfile, delimiter='\t', lineterminator='\n')
 
     for asn in as_list.iteritems():
         tsvout.writerow(asn)
 
-with open('nz-networks-from-rir.tsv', 'wb') as tsvfile:
+with open('../data/nz-networks-from-rir.tsv', 'wb') as tsvfile:
     tsvout = csv.writer(tsvfile, delimiter='\t', lineterminator='\n')
 
     for p in prefix_list.keys():

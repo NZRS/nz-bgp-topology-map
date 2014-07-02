@@ -69,6 +69,7 @@ for ixfile in sys.argv[1:]:
                 if len(prefix) == 0:
                     prefix = prefixes[-1]['prefix']
                 router = fields[3].rstrip()
+                # This removes the AS-Path prepending
                 aspath = list(OrderedDict.fromkeys(asdot2asplain(fields[5].rstrip().split(' '))))
                 # Remove the last element, it's the status of the prefix
                 aspath.pop()
@@ -79,5 +80,6 @@ for ixfile in sys.argv[1:]:
 
         ixviews.append( dict(routeserver=rs, prefixes=prefixes))
 
-with open('nzix.json', 'wb') as ixfile:
+with open('../data/nzix.json', 'wb') as ixfile:
     json.dump(ixviews, ixfile)
+
