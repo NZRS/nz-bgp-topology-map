@@ -19,6 +19,7 @@
   return function() {
     var direction = d3_tip_direction,
         offset    = d3_tip_offset,
+        xy        = d3_tip_x_y,
         html      = d3_tip_html,
         node      = initNode(),
         svg       = null,
@@ -40,6 +41,7 @@
   
       var content = html.apply(this, args),
           poffset = offset.apply(this, args),
+          pxy     = xy.apply(this, args),
           dir     = direction.apply(this, args),
           nodel   = d3.select(node),
           i       = directions.length,
@@ -52,9 +54,13 @@
   
       while(i--) nodel.classed(directions[i], false)
       coords = direction_callbacks.get(dir).apply(this)
+      tip_coords = ( coords.top + poffset[0], coords.left + poffset[1] )
+      if (pxy[0] != -1 && pxy[1] != -1) {
+        tip_coords = pxy
+      }
       nodel.classed(dir, true).style({
-        top: (coords.top +  poffset[0]) + scrollTop + 'px',
-        left: (coords.left + poffset[1]) + scrollLeft + 'px'
+        top: (tip_coords[0] + scrollTop) + 'px',
+        left: (tip_coords[1] + scrollLeft) + 'px'
       })
   
       return tip
@@ -127,6 +133,17 @@
   
       return tip
     }
+
+    // Public: Sets or gets the intended position for the tip
+    //
+    // v - Array of [x, y] position
+    //
+    tip.xy = function(v) {
+      if (!arguments.length) return xy
+      xy = v == null ? v : d3.functor(v)
+  
+      return tip
+    }
   
     // Public: sets or gets the html value of the tooltip
     //
@@ -142,6 +159,7 @@
   
     function d3_tip_direction() { return 'n' }
     function d3_tip_offset() { return [0, 0] }
+    function d3_tip_x_y() { return [-1, -1] }
     function d3_tip_html() { return ' ' }
   
     var direction_callbacks = d3.map({
