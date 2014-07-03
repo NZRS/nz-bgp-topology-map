@@ -53,3 +53,9 @@ data/as-info.json: data/as-list.txt nz-bgp-map/fetch-as-names.py
 deploy: data/nz-bgp-map.json web-frontend/force.html
 	install data/nz-bgp-map.json /var/www/data
 	install web-frontend/force.html /var/www/nz-bgp-map.html
+
+deploy-prod: data/nz-bgp-map.json web-frontend/force.html
+	ssh turista 'mkdir -p /var/www/html/nz-bgp-map/data /var/www/html/d3'
+	rsync -a d3/*.js turista:/var/www/html/d3
+	rsync -a data/nz-bgp-map.json turista:/var/www/html/nz-bgp-map/data
+	scp web-frontend/force.html turista:/var/www/html/nz-bgp-map/index.html
