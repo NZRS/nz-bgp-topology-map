@@ -75,7 +75,7 @@ with open('../data/as-from-rir.tsv', 'rb') as as_info_file:
 with open('../data/as-info.json', 'rb') as as_info_file:
     as_info = json.load(as_info_file)
 
-degree_set = set()
+degree_set = {}
 # Go over the list of nodes and add the degree attribute
 for node_deg in G.degree_iter():
     [ asn, degree ] = node_deg
@@ -86,18 +86,21 @@ for node_deg in G.degree_iter():
         G.node[ node_deg[0] ]['descr'] = as_info[ node_deg[0]]['long_descr']
         # Add a group based on the country for all nodes
         G.node[ asn ]['country'] = as_info[asn]['country'] if as_info[asn]['country'] in ['NZ', 'AU'] else 'other'
-    degree_set.add( node_deg[1] )
+
+    country = G.node[ asn ]['country'] 
+    if not degree_set.has_key(country):
+        degree_set[country] = set()
+    degree_set[country].add(node_deg[1])
+
+degree_range = []
+for country in degree_set:
+    print "Country = {0}".format(country)
+    print "Max = {0}, Min = {1}".format(max(degree_set[country]), min(degree_set[country]))
+    degree_range.append(dict(country=country, min=min(degree_set[country]), max=max(degree_set[country])))
+
+G.graph['dr']= degree_range
+
 
 json_dump = json_graph.node_link_data(G)
 json.dump(json_dump, open('../data/nz-bgp-map.json', 'w'))
 
-with open('nodes.txt', 'wb') as node_file:
-    node_out = csv.writer(node_file, lineterminator='\n')
-    for node in G:
-        node_out.writerow([ node])
-
-with open('degree.txt', 'wb') as degree_file:
-    degree_out = csv.writer(degree_file, delimiter='\t')
-
-    for degree_value in degree_set:
-        degree_out.writerow( [degree_value])

@@ -4,14 +4,12 @@
 <style>
 
 .node {
-  stroke: #fff;
   stroke-width: 2px;
   opacity: .7;
 }
 
 .endnode {
   opacity: .5;
-  stroke: #fff;
   stroke-width: 1px;
 }
 
@@ -80,14 +78,41 @@ var width = 1800,
 var legend_width = 100,
     legend_height = 100;
 
+var degree_domain = [ 1, 250 ];
+
 // var color = d3.scale.category10();
 var color = d3.scale.ordinal()
     .domain(["other", "IX", "AU", "NZ"])
     .range(["#bcbd22","red","gold", "black"]);
 
-var charge = d3.scale.linear()
-    .domain([8, 32])
-    .range([40, 5000])
+var stroke_color = d3.scale.ordinal()
+    .domain(["other", "IX", "AU", "NZ"])
+    .range(["#7CF06A","#FF4747","#FFEC5C", "#A3A3A3"]);
+
+var node_color = {
+        'other': d3.scale.linear()
+                .domain(degree_domain)
+                .range(['#62ED4C', '#0C3806']),
+        'IX':    d3.scale.linear()
+                .domain(degree_domain)
+                .range(['#FF1F1F', '#7A0000']),
+        'AU':    d3.scale.linear()
+                .domain(degree_domain)
+                .range(['#FFE20A', '#A39000']),
+        'NZ':    d3.scale.linear()
+                .domain(degree_domain)
+                .range(['#707070', 'black']),
+    }
+
+
+
+var charge = d3.scale.log()
+    .domain(degree_domain)
+    .range([70, 5000])
+
+var radius = d3.scale.log()
+        .domain(degree_domain)
+        .range([5, 30])
 
 var linksIndex = {};
 
@@ -112,7 +137,8 @@ var legend = svg.append("g")
 
 var tip = d3.tip()
     .attr('class', 'd3-tip')
-    .offset([-10, 0])
+//    .offset([-10, 0])
+    .xy( [ height - 100, 100 ])
     .html(function(d) {
         return "<span class='tip-label'>AS:</span> <span class='tip-info'>" + d.id + "</span><br>" +
             "<span class='tip-label'>Name: </span> <span class='tip-info'>" + d.name + "</span><br>" +
@@ -133,13 +159,19 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
   // Store additional info about the links for latter use
   storeLinks(graph);
 
+  // Update the color scale for the nodes based on info included in the
+  // graph
+  graph.graph[0][1].forEach(function(d) {
+    node_color[d.country].domain([d.min, d.max ])
+  })
+
   force
 //    .charge(function(d) { return -Math.pow( Math.sqrt(d.degree), 2.0) })
-    .charge(function(d) { return -charge(d.radius); })
+    .charge(function(d) { return -charge(d.degree); })
 //    .linkDistance(function(d) { return 3*Math.sqrt( d.source.degree + d.target.degree ) })
     .linkDistance(15)
 //    .friction(0.9)
-    .gravity(2.5)
+    .gravity(2.6)
     .start();
 
   var link = svg.selectAll(".link")
@@ -156,11 +188,11 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
       .attr("class", 'node')
 //      .classed('endnode', function(d) { return (d.degree == 1); })
 //      .attr("r", function(d) { return 8+10*(Math.log(d.degree) / Math.LN10) })
-      .attr("r", function(d) { return d.radius; })
+      .attr("r", function(d) { return radius(d.degree); })
       .attr("data-legend", function(d) { return d.country; })
       .attr("data-legend-color", function(d) { return color(d.country); })
-      .style("stroke-width", function(d) { return d.stroke })
-      .style("fill", function(d) { return color(d.country); })
+      .style("stroke", function(d) { return stroke_color(d.country); })
+      .style("fill", function(d) { return node_color[d.country](d.degree); })
       .on("mouseover", highlight_node)
       .on("mouseout", clear_node)
       .call(force.drag);
