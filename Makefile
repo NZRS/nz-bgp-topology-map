@@ -50,7 +50,8 @@ data/as-list.txt: data/rv-nz-aspath.json data/nzix.json \
 data/as-info.json: data/as-list.txt nz-bgp-map/fetch-as-names.py
 	cd nz-bgp-map && python fetch-as-names.py && cd ..
 
-deploy: data/nz-bgp-map.json web-frontend/force.html
+deploy-test: data/nz-bgp-map.json web-frontend/force.html
+	rsync -a d3/*.js /var/www/d3
 	install data/nz-bgp-map.json /var/www/data
 	install web-frontend/force.html /var/www/nz-bgp-map.html
 
