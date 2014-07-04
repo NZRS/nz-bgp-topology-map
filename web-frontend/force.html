@@ -112,9 +112,11 @@ var charge = d3.scale.log()
 
 var radius = d3.scale.log()
         .domain(degree_domain)
-        .range([5, 30])
+        .range([3, 50])
 
-var linksIndex = {};
+var linksIndex = {},
+    nodeIndex = [],
+    upstreams = [];
 
 var force = d3.layout.force()
     .size([width, height]);
@@ -159,6 +161,7 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
   // Store additional info about the links for latter use
   storeLinks(graph);
 
+
   // Update the color scale for the nodes based on info included in the
   // graph
   graph.graph[0][1].forEach(function(d) {
@@ -166,12 +169,11 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
   })
 
   force
-//    .charge(function(d) { return -Math.pow( Math.sqrt(d.degree), 2.0) })
-    .charge(function(d) { return -charge(d.degree); })
-//    .linkDistance(function(d) { return 3*Math.sqrt( d.source.degree + d.target.degree ) })
+//    .charge(function(d) { return (d.degree == 1 ? 0 : -charge(d.degree)); })
+    .charge(0)
     .linkDistance(15)
 //    .friction(0.9)
-    .gravity(2.6)
+    .gravity(0.01)
     .start();
 
   var link = svg.selectAll(".link")
@@ -207,17 +209,49 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
         .attr("data-style-padding",10)
         .call(d3.legend);
 
-  force.on("tick", function() {
+  // Determine the upstream node for each node
+  findUpstream(graph);
+
+  force.on("tick", function(e) {
     link.attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
 
-    node.attr("cx", function(d) { return d.x; })
+    node
+        .each(cluster(10 * e.alpha * e.alpha))
+        .attr("cx", function(d) { return d.x; })
         .attr("cy", function(d) { return d.y; });
   });
 
 });
+
+function cluster(alpha) {
+    return function(d) {
+        var upstream_idx = upstreams[d.index]
+        if (upstream_idx == null) return;
+        var upstream = nodeIndex[upstream_idx]
+        var x = d.x - upstream.x,
+            y = d.y - upstream.y,
+            l = Math.sqrt(x * x + y * y),
+            r = d.radius + upstream.radius;
+        if (l != r) {
+          l = (l - r) / l * alpha;
+          d.x -= x *= l;
+          d.y -= y *= l;
+          upstream.x += x;
+          upstream.y += y;
+        }
+    };
+}
+
+function findUpstream(g) {
+    g.nodes.forEach(function(d) {
+        nodeIndex[d.index] = d
+        upstreams[d.index] = null
+        if (d.degree == 1) upstreams[d.index] = +(linksIndex[d.index].values()[0])
+    })
+}
 
 function storeLinks(g) {
     g.links.forEach(function(d) {
