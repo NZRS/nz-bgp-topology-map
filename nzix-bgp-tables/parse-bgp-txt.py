@@ -4,6 +4,7 @@ import re
 from collections import OrderedDict
 import json
 import sys
+from IPy import IP
 
 # shamelessly stolen from
 # http://stackoverflow.com/questions/4914008/efficient-way-of-parsing-fixed-width-files-in-python
@@ -48,10 +49,41 @@ def asdot2asplain(aslist=[]):
 
     return rv
 
+def prepare_route(prefix, router, aspath_str):
+    # This removes the AS-Path prepending
+    aspath = list(OrderedDict.fromkeys(asdot2asplain(aspath_str.rstrip().split(' '))))
+    # Remove the last element, it's the status of the prefix
+    aspath.pop()
+    if re.search('/', prefix) == None:
+        prefix = "{0}/24".format(prefix)
+#                print "{0} -> {1} : {2}".format(prefix, router, aspath)
+    for asn in aspath:
+        if path_count.has_key(asn):
+            path_count[asn] += 1
+        else:
+            path_count[asn] = 0
+
+    return dict(prefix=prefix, router=router, aspath=aspath)
+
+def relevant_as(prefix):
+#    print prefix['aspath']
+    
+    try:
+        asn_score = max([ path_count[asn] for asn in prefix['aspath'] ])
+    except ValueError:
+        print "ERROR: ASpath produced invalid score {0}".format(prefix)
+        asn_score = 0
+#    print prefix['aspath']
+#    print count
+
+    return asn_score
+
+
 
 fieldwidths = (3, 3, 17, 17, 24, 80)
 parse = make_parser(fieldwidths)
 ixviews = []
+path_count = {}
 
 for ixfile in sys.argv[1:]:
     with open(ixfile) as bgpdata:
@@ -69,16 +101,31 @@ for ixfile in sys.argv[1:]:
                 if len(prefix) == 0:
                     prefix = prefixes[-1]['prefix']
                 router = fields[3].rstrip()
-                # This removes the AS-Path prepending
-                aspath = list(OrderedDict.fromkeys(asdot2asplain(fields[5].rstrip().split(' '))))
-                # Remove the last element, it's the status of the prefix
-                aspath.pop()
-                if re.search('/', prefix) == None:
-                    prefix = "{0}/24".format(prefix)
-#                print "{0} -> {1} : {2}".format(prefix, router, aspath)
-                prefixes.append( dict(prefix=prefix, router=router, aspath=aspath))
+                # This line only contains the prefix, the rest of the
+                # route info is in the next line
+                if len(router) < 7:
+                    # There is something wrong with the line
+                    prev_prefix = prefix + router
+                else:
+                    prev_prefix = None
 
-        ixviews.append( dict(routeserver=rs, prefixes=prefixes))
+                    route = prepare_route(prefix, router, fields[5])
+                    prefixes.append( route )
+            else:
+                try:
+                    # The field 3 is an IP address
+                    IP(fields[3])
+#                    print "Mark -> {0} learnt from {1}".format(prev_prefix, fields[3])
+                    route = prepare_route(prev_prefix, fields[3], fields[5])
+                    prefixes.append( route )
+                except ValueError:
+                    # Not interested on this line
+                    pass
+
+        # Add the list of prefixes obtained from a routeserver, ordered
+        # by the AS Paths from the most relevant ASes first, in an
+        # attempt to influence the layour of the resulting D3 graph
+        ixviews.append( dict(routeserver=rs, prefixes=sorted(prefixes, key=lambda prefix: relevant_as(prefix), reverse=True)))
 
 with open('../data/nzix.json', 'wb') as ixfile:
     json.dump(ixviews, ixfile)
