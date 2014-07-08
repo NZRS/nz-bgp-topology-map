@@ -80,7 +80,10 @@ var legend_width = 100,
 
 var degree_domain = [ 1, 250 ];
 
-// var color = d3.scale.category10();
+var padding = 8,
+    clusterPadding = 18,
+    maxRadius = 0;
+
 var color = d3.scale.ordinal()
     .domain(["other", "IX", "AU", "NZ"])
     .range(["#bcbd22","red","gold", "black"]);
@@ -112,7 +115,7 @@ var charge = d3.scale.log()
 
 var radius = d3.scale.log()
         .domain(degree_domain)
-        .range([3, 50])
+        .range([5, 60])
 
 var linksIndex = {},
     nodeIndex = [],
@@ -152,28 +155,36 @@ svg.call(tip);
 
 d3.json("data/nz-bgp-map.json", function(error, graph) {
 
+  d3.layout.pack()
+//    .sort(null)
+    .sort(layout_sort)
+    .size([width, height])
+    .radius(function(d) { return radius(d); })
+    .children(function(d) { return d.values; })
+    .value(function(d) { return d.degree; })
+    .nodes({ values: d3.nest()
+        .key(function(d) { return d.upstream; })
+        .entries(graph.nodes)});
+
   force
       .nodes(graph.nodes)
       .links(graph.links)
 
-  var k = Math.sqrt(graph.nodes.length / (width * height));
-
   // Store additional info about the links for latter use
   storeLinks(graph);
-
 
   // Update the color scale for the nodes based on info included in the
   // graph
   graph.graph[0][1].forEach(function(d) {
-    node_color[d.country].domain([d.min, d.max ])
+    if (node_color[d.country]) {
+        node_color[d.country].domain([d.min, d.max ])
+    }
   })
 
   force
-//    .charge(function(d) { return (d.degree == 1 ? 0 : -charge(d.degree)); })
     .charge(0)
-    .linkDistance(15)
 //    .friction(0.9)
-    .gravity(0.01)
+    .gravity(0.4)
     .start();
 
   var link = svg.selectAll(".link")
@@ -194,7 +205,8 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
       .attr("data-legend", function(d) { return d.country; })
       .attr("data-legend-color", function(d) { return color(d.country); })
       .style("stroke", function(d) { return stroke_color(d.country); })
-      .style("fill", function(d) { return node_color[d.country](d.degree); })
+      .style("fill", function(d) { return (node_color[d.country] ?
+node_color[d.country](d.degree) : 'orange'); })
       .on("mouseover", highlight_node)
       .on("mouseout", clear_node)
       .call(force.drag);
@@ -213,18 +225,28 @@ d3.json("data/nz-bgp-map.json", function(error, graph) {
   findUpstream(graph);
 
   force.on("tick", function(e) {
+    node
+        .each(cluster(4 * e.alpha * e.alpha))
+        .each(collide(0.2))
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+
     link.attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
 
-    node
-        .each(cluster(10 * e.alpha * e.alpha))
-        .attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
   });
 
 });
+
+function node_radius(d) {
+    return radius(d);
+}
+
+function layout_sort(a,b) {
+    return a.index - b.index;
+}
 
 function cluster(alpha) {
     return function(d) {
@@ -234,7 +256,7 @@ function cluster(alpha) {
         var x = d.x - upstream.x,
             y = d.y - upstream.y,
             l = Math.sqrt(x * x + y * y),
-            r = d.radius + upstream.radius;
+            r = d.r + upstream.r + clusterPadding;
         if (l != r) {
           l = (l - r) / l * alpha;
           d.x -= x *= l;
@@ -245,11 +267,45 @@ function cluster(alpha) {
     };
 }
 
+// Resolves collisions between d and all other circles.
+function collide(alpha) {
+  var quadtree = d3.geom.quadtree(nodeIndex);
+  return function(d) {
+    var r = d.r + Math.min(padding, clusterPadding),
+        nx1 = d.x - r,
+        nx2 = d.x + r,
+        ny1 = d.y - r,
+        ny2 = d.y + r;
+    quadtree.visit(function(quad, x1, y1, x2, y2) {
+      if (quad.point && (quad.point !== d)) {
+        var localPadding = Math.max(padding, clusterPadding);
+        if (upstreams[d.index] && quad.point === upstreams[d.index]) {
+            localPadding = Math.min(padding, clusterPadding);
+        }
+        var x = d.x - quad.point.x,
+            y = d.y - quad.point.y,
+            l = Math.sqrt(x * x + y * y),
+            r = d.r + quad.point.r + (d.upstream === quad.point.upstream ? padding : clusterPadding);
+//            r = d.r + quad.point.r + padding;
+        if (l < r) {
+          l = (l - r) / l * alpha;
+          d.x -= x *= l;
+          d.y -= y *= l;
+          quad.point.x += x;
+          quad.point.y += y;
+        }
+      }
+      return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+    });
+  };
+}
+
 function findUpstream(g) {
     g.nodes.forEach(function(d) {
         nodeIndex[d.index] = d
         upstreams[d.index] = null
         if (d.degree == 1) upstreams[d.index] = +(linksIndex[d.index].values()[0])
+        if (maxRadius < d.r) maxRadius = d.r
     })
 }
 
