@@ -54,12 +54,12 @@ for ix in ix_set:
     G.node[ ix ]['descr'] = ix_info[ix]['descr']
 
 # Add the paths extracted from RV
-# with open('../data/rv-nz-aspath.json', 'rb') as rv_file:
-#     rv_paths = json.load(rv_file)
+with open('../data/rv-nz-aspath.json', 'rb') as rv_file:
+    rv_paths = json.load(rv_file)
 
-# for aspath in rv_paths['aspath']:
-#     if len(aspath) > 1:
-#         G.add_edges_from( [ [ substitute_as(aspath[i-1]), substitute_as(aspath[i]) ] for i in range(2, len(aspath)) ])
+for aspath in rv_paths['aspath']:
+    if len(aspath) > 1:
+        G.add_edges_from( [ [ substitute_as(aspath[i-1]), substitute_as(aspath[i]) ] for i in range(2, len(aspath)) ])
 
 # Load the short names for the ASes
 with open('../data/as-info.json', 'rb') as as_info_file:
@@ -94,7 +94,7 @@ for country in degree_set:
     print "Max = {0}, Min = {1}".format(max(degree_set[country]), min(degree_set[country]))
     degree_range.append(dict(country=country, min=min(degree_set[country]), max=max(degree_set[country])))
 
-G.graph['dr']= degree_range
+# G.graph['dr']= degree_range
 
 
 json_dump = json_graph.node_link_data(G)
@@ -110,6 +110,7 @@ for link in graph_json_dump['links']:
     link['target'] = graph_json_dump['nodes'][ link['target']]['id']
 
 graph_json_dump['edges'] = graph_json_dump['links']
+graph_json_dump['dr'] = degree_range
 del graph_json_dump['links']
 
 json.dump(json_dump, open('../data/nz-bgp-map.json', 'w'))

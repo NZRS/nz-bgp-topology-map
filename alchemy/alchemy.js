@@ -169,7 +169,11 @@
         return "fill: " + colour + "; stroke: " + colour + ";";
       } else {
         if (alchemy.conf.nodeColour) {
-          return colour = alchemy.conf.nodeColour;
+          if (typeof(alchemy.conf.nodeColour) == 'function') {
+            return colour = alchemy.conf.nodeColour(d);
+          } else {
+            return colour = alchemy.conf.nodeColour;
+          }
         } else {
           return '';
         }
@@ -525,15 +529,16 @@
     },
     nodeClick: function(c) {
       d3.event.stopPropagation();
+      c.clicked = !c.clicked;
       alchemy.vis.selectAll('line').classed('selected', function(d) {
-        return c.id === d.source.id || c.id === d.target.id;
+        return c.clicked && (c.id === d.source.id || c.id === d.target.id);
       });
       alchemy.vis.selectAll('.node').classed('selected', function(d) {
-        return c.id === d.id;
+        return c.clicked && (c.id === d.id);
       }).classed('selected', function(d) {
-        return d.id === c.id || alchemy.edges.some(function(e) {
+        return c.clicked && (d.id === c.id || alchemy.edges.some(function(e) {
           return ((e.source.id === c.id && e.target.id === d.id) || (e.source.id === d.id && e.target.id === c.id)) && d3.select(".edge[source-target*='" + d.id + "']").classed("active");
-        });
+        }));
       });
       if (typeof alchemy.conf.nodeClick === 'function') {
         alchemy.conf.nodeClick(c);
@@ -812,12 +817,20 @@
     alchemy.edges = data.edges;
     nodesMap = d3.map();
     alchemy.nodes.forEach(function(n) {
+      n.clicked = false;
       return nodesMap.set(n.id, n);
     });
     alchemy.edges.forEach(function(e) {
       e.source = nodesMap.get(e.source);
       return e.target = nodesMap.get(e.target);
     });
+    if (alchemy.conf.preLoad != null) {
+      if (typeof alchemy.conf.preLoad === 'function') {
+        alchemy.conf.preLoad();
+      } else if (typeof alchemy.conf.preLoad === 'string') {
+        alchemy[alchemy.conf.preLoad] = true;
+      }
+    }
     alchemy.vis = d3.select(alchemy.conf.divSelector).attr("style", "width:" + (alchemy.conf.graphWidth()) + "px; height:" + (alchemy.conf.graphHeight()) + "px").append("svg").attr("xmlns", "http://www.w3.org/2000/svg").attr("pointer-events", "all").on("dblclick.zoom", null).on('click', alchemy.utils.deselectAll).call(alchemy.interactions.zoom(alchemy.conf.scaleExtent)).append('g').attr("transform", "translate(" + alchemy.conf.initialTranslate + ") scale(" + alchemy.conf.initialScale + ")");
     k = Math.sqrt(alchemy.nodes.length / (alchemy.conf.graphWidth() * alchemy.conf.graphHeight()));
     alchemy.force = d3.layout.force().charge(alchemy.layout.charge(k)).linkDistance(function(d) {
@@ -1067,6 +1080,7 @@
     edgeCaption: 'caption',
     edgeColour: null,
     edgeTypes: null,
+    preLoad: 'preLoad',
     afterLoad: 'afterLoad',
     divSelector: '#alchemy',
     dataSource: null,
