@@ -1,6 +1,7 @@
 all: data/nz-bgp-map.json
 
-IX_LIST=ape wix chix hix pnix
+IX_LIST=wix chix hix pnix ape
+# IX_LIST=pnix hix
 
 NZIX_ROUTESERVERS := $(foreach ix,$(IX_LIST),$(foreach n,1 2,rs$(n).$(ix).nzix.net))
 NZIX_BGP_REQS := $(foreach rs,$(NZIX_ROUTESERVERS),nzix-bgp-tables/$(rs).txt)
@@ -53,6 +54,7 @@ data/as-info.json: data/as-list.txt nz-bgp-map/fetch-as-names.py
 deploy-test: data/nz-bgp-map.json web-frontend/force.html
 	rsync -a d3/*.js /var/www/d3
 	install data/nz-bgp-map.json /var/www/data
+	install data/nz-bgp-map.alchemy.json /var/www/alchemy/data
 	install web-frontend/force.html /var/www/nz-bgp-map.html
 
 deploy-prod: data/nz-bgp-map.json web-frontend/force.html

@@ -17,6 +17,10 @@ def substitute_as(asn):
 with open('substitute-as.json', 'rb') as sub_as_file:
     as_sub_list = json.load(sub_as_file)
 
+# Preload the IX information
+with open('ix-info.json', 'rb') as ix_info_file:
+    ix_info = json.load(ix_info_file)
+
 # Merge the NZIX view with the RouteViews view, generate a full json map
 # that can be loaded into D3
 
@@ -28,7 +32,7 @@ path = []
 for router_entry in nzix_view:
     # If the name of the routeserver is rs1.ape.nzix.net, we keep 'ape'
     try:
-        ix_name = router_entry['routeserver'].split('.')[1]
+        ix_name = substitute_as(router_entry['routeserver'].split('.')[1])
         ix_set.add( ix_name )
         for prefix in router_entry['prefixes']:
             prev_as = ix_name
@@ -39,21 +43,24 @@ for router_entry in nzix_view:
     except IndexError:
         sys.stderr.write('Something went really wrong with data from {0}\n'.format(router_entry['routeserver']))
 
+with open('../data/paths.txt', 'wb') as path_file:
+    path_file.writelines([ "{0}\n".format(p) for p in path])
+    
 G = nx.Graph()
 G.add_edges_from( path )
 for ix in ix_set:
     G.node[ ix ]['country'] = 'IX'
-    G.node[ ix ]['name'] = ix.upper()
-    G.node[ ix ]['descr'] = ix.upper()
+    G.node[ ix ]['name'] = ix_info[ix]['name']
+    G.node[ ix ]['descr'] = ix_info[ix]['descr']
     G.node[ ix ]['stroke'] = 3
 
 # Add the paths extracted from RV
-with open('../data/rv-nz-aspath.json', 'rb') as rv_file:
-    rv_paths = json.load(rv_file)
+# with open('../data/rv-nz-aspath.json', 'rb') as rv_file:
+#     rv_paths = json.load(rv_file)
 
-for aspath in rv_paths['aspath']:
-    if len(aspath) > 1:
-        G.add_edges_from( [ [ substitute_as(aspath[i-1]), substitute_as(aspath[i]) ] for i in range(2, len(aspath)) ])
+# for aspath in rv_paths['aspath']:
+#     if len(aspath) > 1:
+#         G.add_edges_from( [ [ substitute_as(aspath[i-1]), substitute_as(aspath[i]) ] for i in range(2, len(aspath)) ])
 
 # Add style based on the country
 with open('../data/as-from-rir.tsv', 'rb') as as_info_file:
@@ -79,15 +86,21 @@ degree_set = {}
 # Go over the list of nodes and add the degree attribute
 for node_deg in G.degree_iter():
     [ asn, degree ] = node_deg
-    G.node[ node_deg[0] ]['degree'] = node_deg[1]
-    G.node[ node_deg[0] ]['radius'] = 8 + 10*math.log(node_deg[1],10)
-    if as_info.has_key( node_deg[0]):
-        G.node[ node_deg[0] ]['name'] = as_info[ node_deg[0]]['short_descr']
-        G.node[ node_deg[0] ]['descr'] = as_info[ node_deg[0]]['long_descr']
+    G.node[ asn ]['degree'] = degree
+    G.node[ asn ]['upstream'] = G.neighbors(asn)[0] if degree == 1 else asn
+    # If I have info for this ASN and no info has been recorded before
+    if as_info.has_key(asn) and not G.node[asn].has_key(asn):
+        G.node[ asn ]['name'] = as_info[ asn ]['short_descr']
+        G.node[ asn ]['descr'] = as_info[ asn ]['long_descr']
         # Add a group based on the country for all nodes
         G.node[ asn ]['country'] = as_info[asn]['country'] if as_info[asn]['country'] in ['NZ', 'AU'] else 'other'
 
-    country = G.node[ asn ]['country'] 
+    try:
+        country = G.node[ asn ]['country'] 
+    except KeyError:
+        sys.stderr.write('ASN {0} without country??\n'.format(asn))
+        country = 'unknown'
+
     if not degree_set.has_key(country):
         degree_set[country] = set()
     degree_set[country].add(node_deg[1])
@@ -102,5 +115,20 @@ G.graph['dr']= degree_range
 
 
 json_dump = json_graph.node_link_data(G)
+graph_json_dump = json_dump
+
+# Re-adjusting the resulting graph to produce a structure compatible with
+# graphJSON (Alchemy)
+for node in graph_json_dump['nodes']:
+    node['id'] = int(node['id'])
+
+for link in graph_json_dump['links']:
+    link['source'] = graph_json_dump['nodes'][ link['source']]['id']
+    link['target'] = graph_json_dump['nodes'][ link['target']]['id']
+
+graph_json_dump['edges'] = graph_json_dump['links']
+del graph_json_dump['links']
+
 json.dump(json_dump, open('../data/nz-bgp-map.json', 'w'))
+json.dump(graph_json_dump, open('../data/nz-bgp-map.alchemy.json', 'w'))
 

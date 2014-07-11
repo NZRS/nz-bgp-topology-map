@@ -1,0 +1,20 @@
+<html>
+<head>
+<link rel="stylesheet" href="styles/vendor.css">
+<link rel="stylesheet" href="styles/alchemy.min.css">
+</head>
+  <body>
+    <div class="alchemy" id="alchemy"></div>
+
+    <script src="scripts/vendor.js"></script>
+    <script src="scripts/alchemy.min.js"></script>
+    <script type="text/javascript">
+
+        var config = {
+            dataSource: 'data/nz-bgp-map.alchemy.json',
+            };
+
+        alchemy.begin(config)
+    </script>
+  </body>
+</html>
