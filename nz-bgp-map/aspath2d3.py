@@ -52,7 +52,6 @@ for ix in ix_set:
     G.node[ ix ]['country'] = 'IX'
     G.node[ ix ]['name'] = ix_info[ix]['name']
     G.node[ ix ]['descr'] = ix_info[ix]['descr']
-    G.node[ ix ]['stroke'] = 3
 
 # Add the paths extracted from RV
 # with open('../data/rv-nz-aspath.json', 'rb') as rv_file:
@@ -61,22 +60,6 @@ for ix in ix_set:
 # for aspath in rv_paths['aspath']:
 #     if len(aspath) > 1:
 #         G.add_edges_from( [ [ substitute_as(aspath[i-1]), substitute_as(aspath[i]) ] for i in range(2, len(aspath)) ])
-
-# Add style based on the country
-with open('../data/as-from-rir.tsv', 'rb') as as_info_file:
-    as_info = csv.reader(as_info_file, delimiter='\t')
-
-    for asn in as_info:
-        if G.node.has_key(asn[0]):
-            if asn[1] == 'NZ':
-                G.node[ asn[0] ]['group'] = 'NZ'
-                G.node[ asn[0] ]['stroke'] = 1
-            elif asn[1] == 'AU':
-                G.node[ asn[0] ]['group'] = 'AU'
-                G.node[ asn[0] ]['stroke'] = 2
-            else:
-                G.node[ asn[0] ]['group'] = 'unk'
-                G.node[ asn[0] ]['stroke'] = 3
 
 # Load the short names for the ASes
 with open('../data/as-info.json', 'rb') as as_info_file:
@@ -89,11 +72,11 @@ for node_deg in G.degree_iter():
     G.node[ asn ]['degree'] = degree
     G.node[ asn ]['upstream'] = G.neighbors(asn)[0] if degree == 1 else asn
     # If I have info for this ASN and no info has been recorded before
-    if as_info.has_key(asn) and not G.node[asn].has_key(asn):
+    if as_info.has_key(asn) and not G.node[asn].has_key('name'):
         G.node[ asn ]['name'] = as_info[ asn ]['short_descr']
         G.node[ asn ]['descr'] = as_info[ asn ]['long_descr']
         # Add a group based on the country for all nodes
-        G.node[ asn ]['country'] = as_info[asn]['country'] if as_info[asn]['country'] in ['NZ', 'AU'] else 'other'
+        G.node[ asn ]['country'] = as_info[asn]['country'] if as_info[asn]['country'] in ['NZ', 'AU', 'priv'] else 'other'
 
     try:
         country = G.node[ asn ]['country'] 

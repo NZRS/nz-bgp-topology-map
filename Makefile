@@ -56,6 +56,8 @@ deploy-test: data/nz-bgp-map.json web-frontend/force.html
 	install data/nz-bgp-map.json /var/www/data
 	install data/nz-bgp-map.alchemy.json /var/www/alchemy/data
 	install web-frontend/force.html /var/www/nz-bgp-map.html
+	install web-frontend/alchemy.html /var/www/alchemy/index.html
+	install web-frontend/nzrs.css /var/www/alchemy/styles
 
 deploy-prod: data/nz-bgp-map.json web-frontend/force.html
 	ssh turista 'mkdir -p /var/www/html/nz-bgp-map/data /var/www/html/d3'

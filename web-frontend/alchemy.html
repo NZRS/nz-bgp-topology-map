@@ -2,16 +2,35 @@
 <head>
 <link rel="stylesheet" href="styles/vendor.css">
 <link rel="stylesheet" href="styles/alchemy.min.css">
+<link rel="stylesheet" href="styles/nzrs.css">
 </head>
   <body>
     <div class="alchemy" id="alchemy"></div>
 
     <script src="scripts/vendor.js"></script>
-    <script src="scripts/alchemy.min.js"></script>
+    <script src="scripts/alchemy.js"></script>
+    <script src="/d3/d3.min.js"></script>
     <script type="text/javascript">
+
+        var radius = d3.scale.log()
+                .domain([1, 250])
+                .range([5, 60]);
+
+        var border = d3.scale.linear()
+                .domain([1, 250])
+                .range([2, 8]);
 
         var config = {
             dataSource: 'data/nz-bgp-map.alchemy.json',
+            nodeTypes: { "country": ["AU", "NZ", "IX", "priv", "other"] },
+            cluster: false,
+            nodeCaption: function(n) { return n.name; },
+            nodeRadius: function(n) { return radius(n.degree); },
+            nodeStrike: function(n) { return border(n.degree); },
+            zoomControls: true,
+            showFilters: true,
+            showControlDash: true,
+            nodeFilters: true,
             };
 
         alchemy.begin(config)

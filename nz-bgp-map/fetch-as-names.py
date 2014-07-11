@@ -66,7 +66,7 @@ if __name__ == '__main__':
             asn = line.rstrip()
             if int(asn) in range(64512, 65534):
                 # These are private ASN
-                as_info[asn] = dict(country='??', short_descr='PRIVATE',
+                as_info[asn] = dict(country='priv', short_descr='PRIVATE',
                     long_descr='PRIVATE 16-bit ASN')
             else:
                 domains.append( [ "as{0}.asn.cymru.com".format(asn), resolver, asn ])
