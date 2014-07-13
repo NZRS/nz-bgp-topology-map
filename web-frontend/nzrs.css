@@ -1,25 +1,25 @@
 /* Nodes */
 .IX circle {
     fill: red;
-    stroke: orange;
+    stroke: #E34234;
 }
 
 .NZ circle {
     fill: black;
-    stroke: grey;
+    stroke: #707070;
 }
 
 .AU circle {
     fill: yellow;
-    stroke: gold;
+    stroke: #FFFFCC;
 }
 
 .other circle {
-    fill: blue;
-    stroke: lightblue;
+    fill: green;
+    stroke: limegreen;
 }
 
 .priv circle {
-    fill: green;
-    stroke: lightgreen;
+    fill: blue;
+    stroke: lightblue;
 }

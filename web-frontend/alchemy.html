@@ -25,19 +25,19 @@
         var node_color = {
             'other': d3.scale.linear()
                         .domain(deg_domain)
-                        .range(['#62ED4C', '#0C3806']),
+                        .range(['limegreen', 'darkgreen']),
             'IX':    d3.scale.linear()
                         .domain(deg_domain)
-                        .range(['#FF1F1F', '#7A0000']),
+                        .range(['#E34234', '#A40000']),
             'AU':    d3.scale.linear()
                         .domain(deg_domain)
-                        .range(['#FFE20A', '#A39000']),
+                        .range(['#FFF066', '#E5CE15']),
             'NZ':    d3.scale.linear()
                         .domain(deg_domain)
                         .range(['#707070', 'black']),
             'priv':  d3.scale.linear()
                         .domain(deg_domain)
-                        .range(['lightblue', 'blue']),
+                        .range(['blue', 'blue']),
         }
 
         var config = {
@@ -59,6 +59,8 @@
                 });
             },
             zoomControls: true,
+            initialScale: 0.4,
+            scaleExtent: [ 0.4, 2.0 ],
             showFilters: true,
             showControlDash: true,
             nodeFilters: true,
