@@ -68,5 +68,6 @@ deploy-prod: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.h
 	rsync -a data/nz-bgp-map.alchemy.json turista:/var/www/html/alchemy/data
 	scp web-frontend/force.html turista:/var/www/html/nz-bgp-map/index.html
 	rsync -a web-frontend/alchemy.html turista:/var/www/html/alchemy/index.html
-	rsync -a web-frontend/nzrs.css alchemy/styles/*.css turista:/var/www/html/alchemy/styles
+	rsync -a web-frontend/nzrs.css alchemy/styles/*.css \
+        alchemy/styles/fonts alchemy/styles/images turista:/var/www/html/alchemy/styles
 	rsync -a alchemy/*.js turista:/var/www/html/alchemy/scripts
