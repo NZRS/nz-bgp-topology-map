@@ -1,8 +1,9 @@
 <html>
 <head>
 <link rel="stylesheet" href="styles/vendor.css">
-<link rel="stylesheet" href="styles/alchemy.min.css">
+<link rel="stylesheet" href="styles/alchemy.css">
 <link rel="stylesheet" href="styles/nzrs.css">
+<title>NZ BGP Topology Map</title>
 </head>
   <body>
     <div class="alchemy" id="alchemy"></div>
@@ -44,7 +45,7 @@
             dataSource: 'data/nz-bgp-map.alchemy.json',
             nodeTypes: { "country": ["AU", "NZ", "IX", "priv", "other"] },
             cluster: false,
-            nodeCaption: function(n) { return n.name + "(" + n.id + ")"; },
+            nodeCaption: function(n) { return n.name + "<br/>(" + n.id + ")"; },
             nodeRadius: function(n) { return radius(n.degree); },
             nodeStrike: function(n) { return border(n.degree); },
             nodeColour: function(n) { return node_color[n.country](n.degree); },
@@ -64,6 +65,7 @@
             showFilters: true,
             showControlDash: true,
             nodeFilters: true,
+            customFilters: true,
             };
 
         alchemy.begin(config)

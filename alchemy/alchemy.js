@@ -2,6 +2,10 @@
   "Alchemy.js is a graph drawing application for the web.\nCopyright (C) 2014  GraphAlchemist, Inc.\n\nThis program is free software: you can redistribute it and/or modify\nit under the terms of the GNU Affero General Public License as published by\nthe Free Software Foundation, either version 3 of the License, or\n(at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU Affero General Public License for more details.\n\nYou should have received a copy of the GNU Affero General Public License\nalong with this program.  If not, see <http://www.gnu.org/licenses/>.\nlets";
   var Alchemy, allCaptions, allTags, container, currentNodeTypes, currentRelationshipTypes, nodeDragStarted, nodeDragended, nodeDragged, rootNodeId;
 
+  var nodesMap, linksIndex = {};
+
+  var activeFilters;
+
   Alchemy = (function() {
     function Alchemy() {
       this.version = "0.1.0";
@@ -232,6 +236,9 @@
       if (alchemy.conf.nodeFilters) {
         alchemy.filters.showNodeFilters();
       }
+      if (alchemy.conf.customFilters) {
+        alchemy.filters.showCustomFilters();
+      }
       if (alchemy.conf.nodeTypes) {
         nodeKey = Object.keys(alchemy.conf.nodeTypes);
         nodeTypes = '';
@@ -299,13 +306,85 @@
     },
     showNodeFilters: function() {
       var node_filter_html;
-      node_filter_html = " <div id=\"filter-nodes\">\n     <div id=\"filter-node-header\" data-target = \"#node-dropdown\" data-toggle=\"collapse\">\n         <h4>\n             Node Types\n         </h4>\n         <span class=\"fa fa-lg fa-caret-right\"></span>\n     </div>\n     <ul id=\"node-dropdown\" class=\"collapse list-group\" role=\"menu\">\n     </ul>\n</div>";
+      node_filter_html = " <div id=\"filter-nodes\">\n     <div id=\"filter-node-header\" data-target = \"#node-dropdown\" data-toggle=\"collapse\">\n         <h4>\n             Node Types\n         </h4>\n         <span class=\"fa fa-lg fa-caret-right\"></span>\n     </div>\n     <ul id=\"node-dropdown\" class=\"collapse list-group\" role=\"menu\">\n</ul>\n</div>";
+//          nodeTypes += "<li class = 'list-group-item nodeType' role = 'menuitem' id='li-" + nodeType + "' name = " + nodeType + ">" + caption + "</li>";
       $('#filters form').append(node_filter_html);
       return d3.select("#filter-node-header").on('click', function() {
         if (d3.select('#node-dropdown').classed("in")) {
           return d3.select("#filter-node-header>span").attr("class", "fa fa-lg fa-caret-right");
         } else {
           return d3.select("#filter-node-header>span").attr("class", "fa fa-lg fa-caret-down");
+        }
+      });
+    },
+    showCustomFilters: function() {
+      var custom_filter_html;
+      custom_filter_html = " <div id=\"filter-as\">\n" + "<div id=\"filter-as-header\" data-target = \"#as-dropdown\" data-toggle=\"collapse\">\n         <h4>\n             AS Filters\n         </h4>\n         <span class=\"fa fa-lg fa-caret-right\"></span>\n     </div>\n     <ul id=\"as-dropdown\" class=\"collapse list-group\" role=\"menu\">\n</ul>\n</div>";
+      $('#filters form').append(custom_filter_html);
+      d3.select('#as-dropdown').append("li")
+        .attr({ 'class': "list-group-item",
+                'role':  "menuItem",
+                'id':    "NZ-no-peer-IX"})
+        .html("NZ ASes not peering with IX")
+        .on('click', function() {
+          var filterName = this.id;
+          alchemy.flipFilter(filterName);
+          d3.selectAll("#as-dropdown .list-group-item")
+            .classed('clicked', function() {
+                return (filterName == this.id ?  activeFilters.get(filterName) : false);
+            });
+//          d3.select(this).classed('clicked', activeFilters.get(this.id))
+          if (!activeFilters.get(filterName)) {
+              alchemy.vis.selectAll('.node').classed('selected', false);
+          }
+          else {
+              alchemy.vis.selectAll('.node').classed('selected', function(d) {
+                if (d.country == 'NZ') {
+                    var IX_neighbor = false;
+                    linksIndex[d.id].forEach(function(n) {
+                        IX_neighbor = IX_neighbor ||
+                            (nodesMap.get(n).country == 'IX');
+                    });
+                    return !IX_neighbor;
+                }
+                else {
+                    return false;
+                }
+              });
+          }
+        });
+      d3.select('#as-dropdown')
+        .append("li")
+        .attr({ 'class': 'list-group-item',
+                'role':  'menuItem',
+                'id':    'NZ-stub-no-NZ-transit' })
+        .html('NZ Stub ASes not peering with NZ ASes')
+        .on('click', function() {
+          var filterName = this.id;
+          alchemy.flipFilter(filterName);
+          d3.selectAll("#as-dropdown .list-group-item")
+            .classed('clicked', function() {
+                return (filterName == this.id ?  activeFilters.get(filterName) : false);
+            });
+          if (activeFilters.get(filterName)) {
+              alchemy.vis.selectAll('.node').classed('selected', function(d) {
+                if (d.country == 'NZ' && d.degree == 1) {
+                    return nodesMap.get(d.upstream).country != 'NZ';
+                }
+                else {
+                    return false;
+                }
+              });
+          }
+          else {
+            alchemy.vis.selectAll('.node').classed('selected', false);
+          }
+        });
+      return d3.select("#filter-as-header").on('click', function() {
+        if (d3.select('#as-dropdown').classed("in")) {
+          return d3.select("#filter-as-header>span").attr("class", "fa fa-lg fa-caret-right");
+        } else {
+          return d3.select("#filter-as-header>span").attr("class", "fa fa-lg fa-caret-down");
         }
       });
     },
@@ -802,7 +881,7 @@
   };
 
   alchemy.startGraph = function(data) {
-    var k, no_results, nodesMap;
+    var k, no_results;
     if (d3.select(alchemy.conf.divSelector).empty()) {
       console.warn("create an element with the alchemy.conf.divSelector.\ne.g. the defaul #alchemy");
     }
@@ -815,12 +894,24 @@
     }
     alchemy.nodes = data.nodes;
     alchemy.edges = data.edges;
+    activeFilters = d3.map();
     nodesMap = d3.map();
     alchemy.nodes.forEach(function(n) {
       n.clicked = false;
       return nodesMap.set(n.id, n);
     });
     alchemy.edges.forEach(function(e) {
+      // Keep a set with the links for a given node to speed up some
+      // operations
+      if (linksIndex[e.source] === undefined) {
+        linksIndex[e.source] = d3.set();
+      }
+      if (linksIndex[e.target] === undefined) {
+        linksIndex[e.target] = d3.set();
+      }
+      linksIndex[e.source].add([e.target]);
+      linksIndex[e.target].add([e.source]);
+      // Normal code
       e.source = nodesMap.get(e.source);
       return e.target = nodesMap.get(e.target);
     });
@@ -1067,6 +1158,7 @@
     showFilters: false,
     edgeFilters: false,
     nodeFilters: false,
+    customFilters: false,
     zoomControls: false,
     nodeCaption: 'caption',
     nodeColour: null,
@@ -1248,6 +1340,18 @@
     nodeFilters: true,
     zoomControls: true,
     nodeTypes: null
+  };
+
+  alchemy.flipFilter = function(name) {
+      if (!activeFilters.has(name)) {
+        // Initialize in true, as first visit
+        activeFilters.set(name, true);
+      }
+      else {
+          activeFilters.set(name, !activeFilters.get(name));
+      }
+      activeFilters.forEach(function(f) { if (f != name) { this.set(f,
+      false); } });
   };
 
 }).call(this);

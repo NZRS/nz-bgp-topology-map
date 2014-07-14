@@ -65,6 +65,18 @@ for aspath in rv_paths['aspath']:
 with open('../data/as-info.json', 'rb') as as_info_file:
     as_info = json.load(as_info_file)
 
+# Massage a little bit the AS info to drop a set of prefixes common on
+# the names
+for as_entry in as_info:
+    [ descr, sep, suffix ] = as_info[as_entry]['short_descr'].rpartition('-')
+    while( suffix in ['AS','AP', 'AU', 'NZ']):
+        [ descr, sep, suffix ] = descr.rpartition('-')
+    if (sep == ''):
+        as_info[as_entry]['short_descr'] = suffix
+    else:
+        as_info[as_entry]['short_descr'] = sep.join([descr, suffix])
+
+
 degree_set = {}
 # Go over the list of nodes and add the degree attribute
 for node_deg in G.degree_iter():
@@ -104,6 +116,7 @@ graph_json_dump = json_dump
 # graphJSON (Alchemy)
 for node in graph_json_dump['nodes']:
     node['id'] = int(node['id'])
+    node['upstream'] = int(node['upstream'])
 
 for link in graph_json_dump['links']:
     link['source'] = graph_json_dump['nodes'][ link['source']]['id']
