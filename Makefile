@@ -51,7 +51,7 @@ data/as-list.txt: data/rv-nz-aspath.json data/nzix.json \
 data/as-info.json: data/as-list.txt nz-bgp-map/fetch-as-names.py
 	cd nz-bgp-map && python fetch-as-names.py && cd ..
 
-deploy-test: data/nz-bgp-map.json web-frontend/force.html
+deploy-test: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.html
 	rsync -a d3/*.js /var/www/d3
 	install data/nz-bgp-map.json /var/www/data
 	install data/nz-bgp-map.alchemy.json /var/www/alchemy/data
@@ -61,8 +61,12 @@ deploy-test: data/nz-bgp-map.json web-frontend/force.html
 	install alchemy/alchemy.js /var/www/alchemy/scripts
 	install alchemy/alchemy.css /var/www/alchemy/styles
 
-deploy-prod: data/nz-bgp-map.json web-frontend/force.html
-	ssh turista 'mkdir -p /var/www/html/nz-bgp-map/data /var/www/html/d3'
+deploy-prod: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.html
+	ssh turista 'mkdir -p /var/www/html/nz-bgp-map/data /var/www/html/d3 /var/www/html/alchemy/{data,scripts,styles}'
 	rsync -a d3/*.js turista:/var/www/html/d3
 	rsync -a data/nz-bgp-map.json turista:/var/www/html/nz-bgp-map/data
+	rsync -a data/nz-bgp-map.alchemy.json turista:/var/www/html/alchemy/data
 	scp web-frontend/force.html turista:/var/www/html/nz-bgp-map/index.html
+	rsync -a web-frontend/alchemy.html turista:/var/www/html/alchemy/index.html
+	rsync -a web-frontend/nzrs.css alchemy/*.css turista:/var/www/html/alchemy/styles
+	rsync -a alchemy/*.js turista:/var/www/html/alchemy/scripts
