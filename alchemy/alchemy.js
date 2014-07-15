@@ -39,7 +39,7 @@
   alchemy.controlDash = {
     init: function() {
       if (alchemy.conf.showControlDash === true) {
-        d3.select(".alchemy").append("div").attr("id", "control-dash-wrapper").attr("class", "col-md-4 initial");
+        d3.select(".alchemy").append("div").attr("id", "control-dash-wrapper").attr("class", "col-md-3 initial");
         d3.select("#control-dash-wrapper").append("i").attr("id", "dash-toggle").attr("class", "fa fa-flask col-md-offset-12");
         d3.select("#control-dash-wrapper").append("div").attr("id", "control-dash").attr("class", "col-md-12");
         d3.select('#dash-toggle').on('click', alchemy.interactions.toggleControlDash);
@@ -217,7 +217,7 @@
       if (d.root) {
         return alchemy.conf.rootNodeRadius / 2;
       } else {
-        return alchemy.conf.nodeRadius * 2 - 5;
+        return alchemy.utils.nodeSize(d) * 2 - 5;
       }
     }).html(function(d) {
       return alchemy.utils.nodeText(d);
@@ -644,7 +644,7 @@
         } else if (direction === "out") {
           return "translate(" + endTransform.slice(0, 2) + ") scale(" + (endTransform[2] = endTransform[2] - 0.2) + ")";
         } else if (direction === "reset") {
-          return "translate(0,0) scale(1)";
+          return "translate(" + alchemy.conf.initialTranslate + ") scale(" + alchemy.conf.initialScale + ")";
         } else {
           return console.log('error');
         }
@@ -1176,9 +1176,9 @@
     afterLoad: 'afterLoad',
     divSelector: '#alchemy',
     dataSource: null,
-    initialScale: 1,
-    initialTranslate: [0, 0],
-    scaleExtent: [0.5, 2.4],
+    initialScale: 0.4,
+    initialTranslate: [-600, -1000],
+    scaleExtent: [0.4, 2.0],
     warningMessage: "There be no data!  What's going on?"
   };
 
