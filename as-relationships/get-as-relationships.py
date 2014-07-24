@@ -2,6 +2,7 @@
 
 import json
 import csv
+import sys
 
 as_rel = {}
 
@@ -40,7 +41,8 @@ def load_as_relationship(file_list):
 with open('data/rv-nz-aspath.json', 'rb') as rv_file:
     rv_paths = json.load(rv_file)
 
-as_rel = load_as_relationship(['as-rank/20140601.as-rel.txt', 'data/local-as-rel-info.csv'])
+# Handle the input files as parameters from the command line
+as_rel = load_as_relationship(sys.argv[1:])
 
 as_paths = []
 for aspath in rv_paths['aspath']:
@@ -53,4 +55,4 @@ for aspath in rv_paths['aspath']:
         as_paths.append(as_links)
 
 with open('data/rv-nz-as-rels.json', 'wb') as as_rel_file:
-    json.dump(as_paths, as_rel_file)
+    json.dump(dict(aspaths=as_paths), as_rel_file)

@@ -10,7 +10,7 @@ NZIX_BGP_FILES := $(foreach rs,$(NZIX_ROUTESERVERS),$(rs).txt)
 RV_MRT_FILES := $(wildcard rv-bgp-tables/*/rib.*.bz2)
 
 data/nz-bgp-map.json: nz-bgp-map/aspath2d3.py data/nzix.json \
-                        data/rv-nz-aspath.json \
+                        data/rv-nz-as-rels.json \
                         data/as-from-rir.tsv \
                         nz-bgp-map/substitute-as.json \
                         data/as-info.json 
@@ -28,6 +28,12 @@ $(foreach rs,${NZIX_ROUTESERVERS},$(eval $(call NZIX_BGP_template,${rs})))
 
 data/prefix-aspath.txt: rv-bgp-tables/mrt2txt.sh $(RV_MRT_FILES)
 	bash rv-bgp-tables/mrt2txt.sh $(RV_MRT_FILES)
+
+data/rv-nz-as-rels.json: data/rv-nz-aspath.json \
+                            as-rank/20140601.as-rel.txt \
+                            data/local-as-rel-info.csv
+	python as-relationships/get-as-relationships.py \
+        as-rank/20140601.as-rel.txt data/local-as-rel-info.csv
 
 data/rv-nz-aspath.json: data/prefix-aspath.txt \
         data/as-from-rir.tsv \

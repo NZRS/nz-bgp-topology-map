@@ -13,6 +13,13 @@ def substitute_as(asn):
     else:
         return asn
 
+rel2class = { '-': 'p2p',
+              '>': 'p2c',
+              '<': 'c2p',
+              '?': 'unk' }
+def edge_rel2class(rel):
+    return rel2class.get(rel, 'noinfo')
+
 # Preload the list of substitute ASNs
 with open('substitute-as.json', 'rb') as sub_as_file:
     as_sub_list = json.load(sub_as_file)
@@ -53,13 +60,13 @@ for ix in ix_set:
     G.node[ ix ]['name'] = ix_info[ix]['name']
     G.node[ ix ]['descr'] = ix_info[ix]['descr']
 
-# Add the paths extracted from RV
-with open('../data/rv-nz-aspath.json', 'rb') as rv_file:
+# Add the paths extracted from RV with their corresponding relationships
+with open('../data/rv-nz-as-rels.json', 'rb') as rv_file:
     rv_paths = json.load(rv_file)
 
-for aspath in rv_paths['aspath']:
-    if len(aspath) > 1:
-        G.add_edges_from( [ [ substitute_as(aspath[i-1]), substitute_as(aspath[i]) ] for i in range(2, len(aspath)) ])
+for aspath in rv_paths['aspaths']:
+    for src, rel, dst in aspath:
+        G.add_edge( substitute_as(src), substitute_as(dst), _class=edge_rel2class(rel))
 
 # Load the short names for the ASes
 with open('../data/as-info.json', 'rb') as as_info_file:
