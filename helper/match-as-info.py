@@ -32,7 +32,7 @@ with open('as-rank/20140601.degrees.txt', 'r') as as_trans_file:
         as_trans[asn] = dict(t=transit_deg, g=global_deg)
 
  
-with open('local-as-rel-info.csv', 'rb') as rel_file:
+with open('data/local-as-rel-info.csv', 'rb') as rel_file:
     rel_info = csv.reader(rel_file, delimiter="|")
 
     for src,dst,rel in rel_info:
