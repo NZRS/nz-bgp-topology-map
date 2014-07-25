@@ -163,8 +163,8 @@ svg {
 
 .edge {
   stroke-width: 2;
-  stroke: #ccc;
   stroke-opacity: 0.2;
+  stroke: white; /* This get overridden by subclasses */
 }
 
 .edge.active {
@@ -173,17 +173,15 @@ svg {
 
 .edge.active:hover,
 .edge.active.selected {
-  stroke: white !important;
   cursor: pointer;
   stroke-opacity: 1;
-  stroke-width: 4;
+  stroke-width: 3;
 }
 
 .edge.active.highlight {
   opacity: .8 !important;
   stroke-width: 2 !important;
   stroke-opacity: .7 !important;
-  stroke: #fff !important;
 }
 
 .edge.inactive {
@@ -194,7 +192,6 @@ svg {
   opacity: .8 !important;
   stroke-width: 2 !important;
   stroke-opacity: .5 !important;
-  stroke: #e89619 !important;
 }
 
 #loading-spinner {

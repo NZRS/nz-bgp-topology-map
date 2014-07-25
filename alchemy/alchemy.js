@@ -108,7 +108,8 @@
       };
     }
     edge.enter().insert("line", 'g.node').attr("class", function(d) {
-      return "edge " + d.caption + " active " + (d.shortest ? 'highlighted' : '');
+      return "edge " + d.caption + " active " + (d.shortest ?
+      'highlighted' : '') + ( d._class === undefined ? '' : ' ' + d._class);
     }).attr('source-target', function(d) {
       return d.source.id + '-' + d.target.id;
     }).on('click', alchemy.interactions.edgeClick);
@@ -217,7 +218,7 @@
       if (d.root) {
         return alchemy.conf.rootNodeRadius / 2;
       } else {
-        return alchemy.utils.nodeSize(d) * 2 - 5;
+        return alchemy.utils.nodeSize(d) * 1.2 + 5;
       }
     }).html(function(d) {
       return alchemy.utils.nodeText(d);

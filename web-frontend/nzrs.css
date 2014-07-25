@@ -23,3 +23,16 @@
     fill: blue;
     stroke: lightblue;
 }
+
+.edge.p2p {
+    stroke: red;
+}
+
+.edge.p2c .edge.c2p {
+    stroke: blue;
+    stroke-dasharray: 6,3;
+}
+
+.edge.unk {
+    stroke: yellow;
+}
