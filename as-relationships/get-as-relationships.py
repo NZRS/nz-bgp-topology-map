@@ -15,15 +15,19 @@ def rel_char( src, dst ):
             rv = '-'
         elif (as_rel[key] < 0):
             rv = '>'
-        else:
+        elif (as_rel[key] == 1):
             rv = '<'
+        else:
+            rv = '='
     elif as_rel.has_key(key_rev):
         if (as_rel[key_rev] == 0):
             rv = '-'
         elif (as_rel[key_rev] < 0):
             rv = '<'
-        else:
+        elif (as_rel[key_rev] == 1):
             rv = '>'
+        else:
+            rv = '='
 
     return rv
 
