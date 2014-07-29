@@ -58,14 +58,15 @@ data/as-info.json: data/as-list.txt nz-bgp-map/fetch-as-names.py
 	cd nz-bgp-map && python fetch-as-names.py && cd ..
 
 deploy-test: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.html
+	mkdir -p /var/www/d3 /var/www/data /var/www/alchemy/data /var/www/alchemy/scripts
 	rsync -a d3/*.js /var/www/d3
 	install data/nz-bgp-map.json /var/www/data
 	install data/nz-bgp-map.alchemy.json /var/www/alchemy/data
 	install web-frontend/force.html /var/www/nz-bgp-map.html
 	install web-frontend/alchemy.html /var/www/alchemy/index.html
-	install alchemy/alchemy.js /var/www/alchemy/scripts
+	install alchemy/alchemy.js alchemy/vendor.js /var/www/alchemy/scripts/
 	rsync -a web-frontend/nzrs.css alchemy/styles/*.css \
-        alchemy/styles/fonts alchemy/styles/images /var/www/alchemy/styles
+        alchemy/styles/fonts alchemy/styles/images /var/www/alchemy/styles/
 
 deploy-prod: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.html
 	ssh turista 'mkdir -p /var/www/html/nz-bgp-map/data /var/www/html/d3 /var/www/html/alchemy/{data,scripts,styles}'
