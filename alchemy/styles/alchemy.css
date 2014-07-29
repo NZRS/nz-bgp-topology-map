@@ -97,11 +97,6 @@ svg {
   stroke-opacity: 1;
 }
 
-.node circle.root {
-  fill: #9000ff;
-  stroke: #90c73d;
-}
-
 .node text.root {
   font-size: 32px;
 }
