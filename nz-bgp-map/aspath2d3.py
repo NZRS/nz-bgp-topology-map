@@ -16,6 +16,7 @@ def substitute_as(asn):
 rel2class = { '-': 'p2p',
               '>': 'p2c',
               '<': 'c2p',
+              '=': 's2s',
               '?': 'unk' }
 def edge_rel2class(rel):
     return rel2class.get(rel, 'noinfo')
@@ -66,7 +67,10 @@ with open('../data/rv-nz-as-rels.json', 'rb') as rv_file:
 
 for aspath in rv_paths['aspaths']:
     for src, rel, dst in aspath:
-        G.add_edge( substitute_as(src), substitute_as(dst), _class=edge_rel2class(rel))
+        _class = edge_rel2class(rel)
+        _src = substitute_as(src)
+        _dst = substitute_as(dst)
+        G.add_edge( _src, _dst, _class=_class)
 
 # Load the short names for the ASes
 with open('../data/as-info.json', 'rb') as as_info_file:
@@ -113,9 +117,25 @@ for country in degree_set:
     print "Max = {0}, Min = {1}".format(max(degree_set[country]), min(degree_set[country]))
     degree_range.append(dict(country=country, min=min(degree_set[country]), max=max(degree_set[country])))
 
-# G.graph['dr']= degree_range
+# Go over the list of nodes and remove those with degree 1 and country
+# 'other'
+to_delete = []
+for node in G.nodes_iter():
+    if G.node[node]['country'] in ['other', 'AU'] and G.node[node]['degree'] == 1:
+        to_delete.append(node)
 
+# Save the list of nodes to remove for debugging
+with open('nodes_to_remove.txt', 'w') as rem_file:
+    rem_file.writelines([ "{} {}\n".format(n, G.node[n]['name']) for n in to_delete ])
 
+G.remove_nodes_from(to_delete)
+
+# Test: Set Vocus AS as root node for the visualization
+for id in ['4826', '24130', '9560', '9439', '9503', '45177', '4648',
+'38022', '4768', '23655', '24388']:
+    G.node[id]['root'] = True
+
+# Make a copy of the graph to generate a second output
 json_dump = json_graph.node_link_data(G)
 graph_json_dump = json_dump
 
