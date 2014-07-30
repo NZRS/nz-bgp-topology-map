@@ -25,14 +25,19 @@
 }
 
 .edge.p2p {
-    stroke: red;
+    stroke: orange;
 }
 
-.edge.p2c .edge.c2p {
-    stroke: blue;
+.edge.p2c {
+    stroke: lavender;
     stroke-dasharray: 6,3;
 }
 
-.edge.unk {
-    stroke: yellow;
+.edge.c2p {
+    stroke: lavender;
+    stroke-dasharray: 4,2;
+}
+
+.edge.undefined {
+    stroke: lightgreen;
 }
