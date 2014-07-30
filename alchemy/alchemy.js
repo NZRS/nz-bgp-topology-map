@@ -108,8 +108,8 @@
       };
     }
     edge.enter().insert("line", 'g.node').attr("class", function(d) {
-      return "edge " + d.caption + " active " + (d.shortest ?
-      'highlighted' : '') + ( d._class === undefined ? '' : ' ' + d._class);
+      return "edge active " + (d.shortest ?  'highlighted' : '') +
+            ( d._class === undefined ? ' undefined' : ' ' + d._class);
     }).attr('source-target', function(d) {
       return d.source.id + '-' + d.target.id;
     }).on('click', alchemy.interactions.edgeClick);
@@ -212,17 +212,24 @@
       radius = d3.select(this).attr('r');
       return "fill:" + (nodeColours(d)) + "; stroke-width: " + alchemy.utils.nodeBorder(d);
     });
-    return nodeEnter.append('svg:text').attr('id', function(d) {
-      return "text-" + d.id;
-    }).attr('dy', function(d) {
-      if (d.root) {
-        return alchemy.conf.rootNodeRadius / 2;
-      } else {
-        return alchemy.utils.nodeSize(d) * 1.2 + 5;
-      }
-    }).html(function(d) {
-      return alchemy.utils.nodeText(d);
-    });
+  };
+
+  alchemy.drawing.labelnodes = function(nodelist) {
+    var useless_var = 10;
+    useless_var += 1;
+    nodelist.append('svg:text')
+        .attr('id', function(d) {
+          return "text-" + d.id; })
+        .attr('dy', function(d) {
+          if (d.root) {
+            return alchemy.conf.rootNodeRadius / 2;
+          } else {
+            return alchemy.utils.nodeSize(d) * 1.1 + 7;
+          }
+        })
+        .html(function(d) {
+            return alchemy.utils.nodeText(d);
+        });
   };
 
   alchemy.filters = {
@@ -668,13 +675,14 @@
 
   alchemy.layout = {
     gravity: function(k) {
-      return 8 * k;
+      return 4 * k;
     },
     charge: function(k) {
       if (alchemy.conf.cluster) {
         return -500;
       } else {
-        return -10 / k;
+//        return -25 / k;
+        return -1100;
       }
     },
     linkStrength: function(edge) {
@@ -701,7 +709,13 @@
     },
     collide: function(node) {
       var nx1, nx2, ny1, ny2, r;
-      r = 2.2 * alchemy.utils.nodeSize(node) + alchemy.conf.nodeOverlap;
+/*
+      rootKey = alchemy.conf.rootNodes;
+      if ((node[rootKey] != null) && node[rootKey]) {
+        return function(quad, x1, y1, x2, y2) { return true; };
+      }
+*/
+      r = 2.4 * alchemy.utils.nodeSize(node) + alchemy.conf.nodeOverlap;
       nx1 = node.x - r;
       nx2 = node.x + r;
       ny1 = node.y - r;
@@ -764,29 +778,37 @@
           rootNodes.push(n);
         }
       }
-      if (rootNodes.length === 1) {
+      if (rootNodes.length >= 1) {
         n = rootNodes[0];
         alchemy.nodes[n.i].x = container.width / 2;
         alchemy.nodes[n.i].y = container.height / 2;
         alchemy.nodes[n.i].px = container.width / 2;
         alchemy.nodes[n.i].py = container.height / 2;
         alchemy.nodes[n.i].fixed = true;
-      } else {
-        number = 0;
-        _results = [];
-        for (_j = 0, _len1 = rootNodes.length; _j < _len1; _j++) {
+        var theta = 0;
+        for (_j = 1, _len1 = rootNodes.length; _j < _len1; _j++) {
           n = rootNodes[_j];
-          number++;
-          alchemy.nodes[n.i].x = container.width / Math.sqrt(rootNodes.length * number);
-          alchemy.nodes[n.i].y = container.height / 2;
-          _results.push(alchemy.nodes[n.i].fixed = true);
+          pn = rootNodes[_j-1];
+          alchemy.nodes[n.i].x = alchemy.conf.cliqueNodeRadius * 
+              Math.cos(theta) + container.width / 2;
+          alchemy.nodes[n.i].y = alchemy.conf.cliqueNodeRadius *
+              Math.sin(theta) + container.height / 2;
+          var inter_node_r = alchemy.nodes[n.i].r + alchemy.nodes[pn.i].r + 20;
+          theta += Math.atan(inter_node_r / alchemy.conf.cliqueNodeRadius)
+/*
+          alchemy.nodes[n.i].x = alchemy.conf.cliqueNodeRadius * 
+              Math.cos(2*Math.PI*_j/(_len1-1)) + container.width / 2;
+          alchemy.nodes[n.i].y = alchemy.conf.cliqueNodeRadius *
+              Math.sin(2*Math.PI*_j/(_len1-1)) + container.height / 2;
+*/
+//          _results.push(alchemy.nodes[n.i].fixed = true);
+          alchemy.nodes[n.i].fixed = true;
         }
-        return _results;
       }
     },
     chargeDistance: function() {
       var distance;
-      distance = 500;
+      distance = 40;
       return distance;
     },
     linkDistancefn: function(edge, k) {
@@ -941,11 +963,11 @@
       }
     }
     if (alchemy.conf.initialScale !== alchemy.defaults.initialScale) {
-      alchemy.interactions.zoom.scale(alchemy.conf.initialScale);
+      alchemy.interactions.zoom().scale(alchemy.conf.initialScale);
       return;
     }
     if (alchemy.conf.initialTranslate !== alchemy.defaults.initialTranslate) {
-      alchemy.interactions.zoom.translate(alchemy.conf.initialTranslate);
+      alchemy.interactions.zoom().translate(alchemy.conf.initialTranslate);
     }
   };
 
@@ -1101,7 +1123,7 @@
       this.force.start();
     }
     if (!initialComputationDone) {
-      while (this.force.alpha() > 0.005) {
+      while (this.force.alpha() > 0.001) {
         alchemy.force.tick();
       }
       initialComputationDone = true;
@@ -1113,14 +1135,11 @@
     alchemy.styles.edgeGradient(alchemy.edges);
     alchemy.drawing.drawedges(alchemy.edge);
     alchemy.drawing.drawnodes(alchemy.node);
+    alchemy.drawing.labelnodes(alchemy.node);
     alchemy.vis.selectAll('g.node').attr('transform', function(d) {
       return "translate(" + d.x + ", " + d.y + ")";
     });
-    alchemy.vis.selectAll('.node text').html((function(_this) {
-      return function(d) {
-        return _this.utils.nodeText(d);
-      };
-    })(this));
+    alchemy.layout.positionRootNodes();
     return alchemy.node.exit().remove();
   };
 
@@ -1135,13 +1154,13 @@
         return d3.select(this.divSelector).node().parentElement.clientHeight;
       }
     },
-    alpha: .5,
+    alpha: .60,
     cluster: false,
     clusterColours: d3.shuffle(["#DD79FF", "#FFFC00", "#00FF30", "#5168FF", "#00C0FF", "#FF004B", "#00CDCD", "#f83f00", "#f800df", "#ff8d8f", "#ffcd00", "#184fff", "#ff7e00"]),
     collisionDetection: true,
     fixNodes: false,
-    fixRootNodes: false,
-    forceLocked: true,
+    fixRootNodes: true,
+    forceLocked: false,
     linkDistance: alchemy.layout.linkDistancefn,
     nodePositions: null,
     showEditor: false,
@@ -1170,6 +1189,7 @@
     nodeTypes: null,
     rootNodes: 'root',
     rootNodeRadius: 15,
+    cliqueNodeRadius: 175,
     edgeCaption: 'caption',
     edgeColour: null,
     edgeTypes: null,
@@ -1177,9 +1197,9 @@
     afterLoad: 'afterLoad',
     divSelector: '#alchemy',
     dataSource: null,
-    initialScale: 0.4,
+    initialScale: 0.3,
     initialTranslate: [-600, -1000],
-    scaleExtent: [0.4, 2.0],
+    scaleExtent: [0.3, 2.0],
     warningMessage: "There be no data!  What's going on?"
   };
 
@@ -1289,11 +1309,7 @@
       if (alchemy.conf.nodeRadius != null) {
         rootKey = alchemy.conf.rootNodes;
         if (typeof alchemy.conf.nodeRadius === 'function') {
-          if ((d[rootKey] != null) && d[rootKey]) {
-            return alchemy.conf.rootNodeRadius;
-          } else {
             return alchemy.conf.nodeRadius(d);
-          }
         } else if (typeof alchemy.conf.nodeRadius === 'string') {
           key = alchemy.conf.nodeRadius;
           if ((d[rootKey] != null) && d[rootKey]) {
