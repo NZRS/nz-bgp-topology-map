@@ -1,0 +1,7 @@
+{
+ "9439": { "name": "WIX", "descr": "Wellington Internet eXchange"},
+ "9560": { "name": "APE", "descr": "Auckland Peering Exchange"},
+ "24388": { "name": "CHIX", "descr": "ChristChurch Internet eXchange"},
+ "45279": { "name": "HIX", "descr": "Hamilton Internet eXchange"},
+ "9281": { "name": "PNIX", "descr": "Palmerston North Internet eXchange"}
+}
