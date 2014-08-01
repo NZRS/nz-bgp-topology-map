@@ -10,7 +10,7 @@
 
     <script src="scripts/vendor.js"></script>
     <script src="scripts/alchemy.js"></script>
-    <script src="/d3/d3.min.js"></script>
+    <script src="/d3/d3.js" charset="utf-8"></script>
     <script type="text/javascript">
 
         var deg_domain = [1, 250];
@@ -44,6 +44,14 @@
         var config = {
             dataSource: 'data/nz-bgp-map.alchemy.json',
             nodeTypes: { "country": ["AU", "NZ", "IX", "priv", "other"] },
+            nodeLabels: { 'AU': 'Australian AS', 'NZ': 'New Zealand AS',
+            'IX': 'Internet Exchange', 'priv': 'Private AS', 'other':
+            'Other Country AS' },
+            edgeTypes: [ 'p2c', 'p2p', 's2s', 'undefined' ],
+            edgeLabels: { 'p2c': 'Customer to Provider',
+                'p2p': 'Peer to Peer',
+                's2s': 'Sibling to Sibling',
+                'undefined': 'Unknown' },
             cluster: false,
             nodeCaption: function(n) { return n.name + "<br/>(" + n.id + ")"; },
             nodeRadius: function(n) { return radius(n.degree); },
@@ -66,6 +74,10 @@
             showControlDash: true,
             nodeFilters: true,
             customFilters: true,
+            showLegend: true,
+            nodeLegend: true,
+            edgeLegend: true,
+            forceLocked: false,
             };
 
         alchemy.begin(config)

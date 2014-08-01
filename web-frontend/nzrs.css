@@ -28,16 +28,47 @@
     stroke: orange;
 }
 
-.edge.p2c {
-    stroke: lavender;
+.edge.s2s {
+    stroke: red;
+    stroke-width: 3px;
+}
+
+.edge.p2c,.edge.c2p{
+    stroke: lightgreen;
     stroke-dasharray: 6,3;
 }
 
-.edge.c2p {
-    stroke: lavender;
-    stroke-dasharray: 4,2;
+.edge.undefined {
+    stroke: cyan;
+    stroke-dasharray: 8,2;
 }
 
-.edge.undefined {
-    stroke: lightgreen;
+.nodeLegendLabel {
+    fill: white;
+    font-size: 18px;
+}
+
+.edgeLegendLabel {
+    fill: white;
+    font-size: 18px;
+}
+
+.edgeLegendItem {
+    height: 40px;
+}
+
+.nodeLegendItem {
+    height: 40px;
+}
+
+.legendHeader {
+    color: white;
+}
+
+h3.legendHeader {
+    padding-left: 10px;
+}
+
+h4.legendHeader {
+    padding-left: 20px;
 }

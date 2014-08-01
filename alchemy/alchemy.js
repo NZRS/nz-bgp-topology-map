@@ -47,6 +47,7 @@
         alchemy.controlDash.search();
         alchemy.controlDash.filters();
         alchemy.controlDash.stats();
+        alchemy.controlDash.legend();
         return alchemy.controlDash.modifyElements();
       }
     },
@@ -75,6 +76,10 @@
     stats: function() {
       d3.select("#control-dash").append("div").attr("id", "stats");
       return alchemy.stats.init();
+    },
+    legend: function() {
+      d3.select("#control-dash").append("div").attr("id", "legend");
+      return alchemy.legend.init();
     },
     modifyElements: function() {
       d3.select("#control-dash").append("div").attr("id", "update-elements");
@@ -1109,6 +1114,95 @@
     }
   };
 
+  alchemy.legend = {
+    init: function() {
+      if (alchemy.conf.showLegend === true) {
+        alchemy.legend.show();
+        return alchemy.legend.update();
+      }
+    },
+    show: function() {
+      var legend_html;
+      legend_html = '<div id = "legend-header" data-toggle="collapse" data-target="#legend #all-legend"><h3 class="legendHeader">Legend</h3><span class = "fa fa-caret-right fa-2x"></span></div><div id="all-legend" class="collapse"><h4 class="legendHeader">Edges</h4><ul class = "list-group" id="edgeLegend"></ul><h4 class="legendHeader">Nodes</h4><ul class = "list-group" id="nodeLegend"></ul>';
+      d3.select('#legend').html(legend_html);
+    },
+    nodeLegend: function() {
+      if (alchemy.conf.nodeTypes) {
+        var nodeHtmlLegend = "";
+        nodeKey = Object.keys(alchemy.conf.nodeTypes);
+        _ref = alchemy.conf.nodeTypes[nodeKey];
+        var symHeight, symWidth;
+        symHeight = 35;
+        symWidth  = d3.select("#legend").node().clientWidth;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          nodeType = _ref[_i];
+          fakeNode = { degree: 3, country: nodeType };
+          d3.select("#nodeLegend").append('li')
+            .attr('id', 'nodeLegend-item-' + nodeType)
+            .attr('class', 'list-group-item nodeLegendItem');
+          d3.select('#nodeLegend-item-'+nodeType)
+            .append('svg')
+                .style( {'width': symWidth, 'height': symHeight} )
+            .append('g')
+                .attr('transform', 'translate('+ symHeight/2 + ',' + symHeight/2 + ')')
+            .append('circle')
+            .attr('class', nodeType)
+            .attr('r', symHeight/2)
+            .attr('style', "fill:" + alchemy.conf.nodeColour(fakeNode));
+
+          d3.select('#nodeLegend-item-'+nodeType+ ' svg g')
+            .append('svg:text')
+            .attr('class', 'nodeLegendLabel')
+            .attr('transform', 'translate('+ (symHeight) + ',10)')
+            .attr('style', 'text-anchor: start;')
+            .html(alchemy.conf.nodeLabels[nodeType]);
+        }
+      }
+    },
+    edgeLegend: function() {
+      if (alchemy.conf.edgeTypes) {
+        var edgeHtmlLegend = "";
+        _ref = alchemy.conf.edgeTypes;
+        var symHeight, symWidth;
+        legendHeight = 30;
+        legendWidth  = 200;
+        lineWidth = 35;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          edgeType = _ref[_i];
+          d3.select("#edgeLegend").append('li')
+            .attr('id', 'edgeLegend-item-' + edgeType)
+            .attr('class', 'list-group-item edgeLegendItem');
+          d3.select('#edgeLegend-item-'+edgeType)
+            .append('svg')
+                .style( {'width': legendWidth, 'height': legendHeight} )
+            .append('g')
+            .append('line')
+            .attr('class', 'edge '+edgeType)
+            .attr('style', 'stroke-opacity:1.0;stroke-width:4')
+            .attr('x1', 0)
+            .attr('y1', legendHeight/2)
+            .attr('x2', lineWidth)
+            .attr('y2', legendHeight/2)
+
+          d3.select('#edgeLegend-item-'+edgeType+ ' svg g')
+            .append('svg:text')
+            .attr('class', 'edgeLegendLabel')
+            .attr('transform', 'translate('+ (lineWidth + 5) + ',15)')
+            .attr('style', 'text-anchor: start;')
+            .html(alchemy.conf.edgeLabels[edgeType]);
+        }
+      }
+    },
+    update: function() {
+      if (alchemy.conf.nodeLegend === true) {
+        alchemy.legend.nodeLegend();
+      }
+      if (alchemy.conf.edgeLegend === true) {
+        return alchemy.legend.edgeLegend();
+      }
+    }
+  };
+
   alchemy.updateGraph = function(start) {
     var initialComputationDone;
     if (start == null) {
@@ -1179,6 +1273,9 @@
     edgeFilters: false,
     nodeFilters: false,
     customFilters: false,
+    showLegend: false,
+    nodeLegend: false,
+    edgeLegend: false,
     zoomControls: false,
     nodeCaption: 'caption',
     nodeColour: null,
@@ -1187,6 +1284,7 @@
     nodeRadius: 10,
     nodeStrike: 2,
     nodeTypes: null,
+    nodeLabels: null,
     rootNodes: 'root',
     rootNodeRadius: 15,
     cliqueNodeRadius: 175,
@@ -1356,6 +1454,9 @@
     edgeFilters: true,
     nodeFilters: true,
     zoomControls: true,
+    showLegend: true,
+    edgeLegend: true,
+    nodeLegend: true,
     nodeTypes: null
   };
 
