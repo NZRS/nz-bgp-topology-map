@@ -26,43 +26,13 @@ with open('substitute-as.json', 'rb') as sub_as_file:
     as_sub_list = json.load(sub_as_file)
 
 # Preload the IX information
-with open('ix-info.json', 'rb') as ix_info_file:
+with open('../data/ix-info.json', 'rb') as ix_info_file:
     ix_info = json.load(ix_info_file)
 
-# Merge the NZIX view with the RouteViews view, generate a full json map
-# that can be loaded into D3
-
-with open('../data/nzix.json', 'rb') as nzix_file:
-    nzix_view = json.load( nzix_file )
-
-ix_set = set()
-path = []
-for router_entry in nzix_view:
-    # If the name of the routeserver is rs1.ape.nzix.net, we keep 'ape'
-    try:
-        ix_name = substitute_as(router_entry['routeserver'].split('.')[1])
-        ix_set.add( ix_name )
-        for prefix in router_entry['prefixes']:
-            prev_as = ix_name
-            for asn in prefix['aspath']:
-                asn = substitute_as(asn)
-                path.append([ prev_as, asn])
-                prev_as = asn
-    except IndexError:
-        sys.stderr.write('Something went really wrong with data from {0}\n'.format(router_entry['routeserver']))
-
-with open('../data/paths.txt', 'wb') as path_file:
-    path_file.writelines([ "{0}\n".format(p) for p in path])
-    
 G = nx.Graph()
-G.add_edges_from( path )
-for ix in ix_set:
-    G.node[ ix ]['country'] = 'IX'
-    G.node[ ix ]['name'] = ix_info[ix]['name']
-    G.node[ ix ]['descr'] = ix_info[ix]['descr']
 
 # Add the paths extracted from RV with their corresponding relationships
-with open('../data/rv-nz-as-rels.json', 'rb') as rv_file:
+with open('../data/nz-as-rels.json', 'rb') as rv_file:
     rv_paths = json.load(rv_file)
 
 for aspath in rv_paths['aspaths']:
@@ -71,6 +41,13 @@ for aspath in rv_paths['aspaths']:
         _src = substitute_as(src)
         _dst = substitute_as(dst)
         G.add_edge( _src, _dst, _class=_class)
+
+# Overwrite the information about the ASes representing IXes with
+# prepared data
+for ix_as, ix_data in ix_info.iteritems():
+    G.node[ ix_as ]['country'] = 'IX'
+    G.node[ ix_as ]['name']    = ix_data['name']
+    G.node[ ix_as ]['descr']   = ix_data['descr']
 
 # Load the short names for the ASes
 with open('../data/as-info.json', 'rb') as as_info_file:

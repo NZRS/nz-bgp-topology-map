@@ -49,11 +49,13 @@ def asdot2asplain(aslist=[]):
 
     return rv
 
-def prepare_route(prefix, router, aspath_str):
+def prepare_route(prefix, ix_as, aspath_str):
     # This removes the AS-Path prepending
     aspath = list(OrderedDict.fromkeys(asdot2asplain(aspath_str.rstrip().split(' '))))
     # Remove the last element, it's the status of the prefix
     aspath.pop()
+    # Append the ix_as to the beginning of the aspath
+    aspath.insert(0, ix_as)
     if re.search('/', prefix) == None:
         prefix = "{0}/24".format(prefix)
 #                print "{0} -> {1} : {2}".format(prefix, router, aspath)
@@ -63,18 +65,14 @@ def prepare_route(prefix, router, aspath_str):
         else:
             path_count[asn] = 0
 
-    return dict(prefix=prefix, router=router, aspath=aspath)
+    return dict(prefix=prefix, aspath=aspath)
 
 def relevant_as(prefix):
-#    print prefix['aspath']
-    
     try:
         asn_score = max([ path_count[asn] for asn in prefix['aspath'] ])
     except ValueError:
         print "ERROR: ASpath produced invalid score {0}".format(prefix)
         asn_score = 0
-#    print prefix['aspath']
-#    print count
 
     return asn_score
 
@@ -85,16 +83,31 @@ parse = make_parser(fieldwidths)
 ixviews = []
 path_count = {}
 
+# Read the file with IX info
+with open('../data/ix-info.json', 'rb') as ix_info_file:
+    ix_info = json.load(ix_info_file)
+
+    ix_name2as = {}
+    for k in ix_info.keys():
+        ix_name2as[ ix_info[k]['name'] ] = k
+
 for ixfile in sys.argv[1:]:
     with open(ixfile) as bgpdata:
 
         rs = ''
         prefixes = []
+        ix_name = ''
+        ix_as = 0
 
         for line in bgpdata:
             res = re.match('\s+Router: (\S*)', line)
             if res != None:
                 rs = res.group(1)
+                # The routeserver looks like rs1.ape.nzix.net, extract the
+                # meaningful label to map to the corresponding AS number
+                ix_name = rs.split('.')[1].upper()
+                ix_as   = ix_name2as[ix_name]
+
             fields = parse(line)
             if len(fields[1]) > 0 and fields[1][0] == '*':
                 prefix = fields[2].rstrip()
@@ -109,24 +122,22 @@ for ixfile in sys.argv[1:]:
                 else:
                     prev_prefix = None
 
-                    route = prepare_route(prefix, router, fields[5])
+                    route = prepare_route(prefix, ix_as, fields[5])
                     prefixes.append( route )
             else:
                 try:
                     # The field 3 is an IP address
                     IP(fields[3])
 #                    print "Mark -> {0} learnt from {1}".format(prev_prefix, fields[3])
-                    route = prepare_route(prev_prefix, fields[3], fields[5])
+                    route = prepare_route(prev_prefix, ix_as, fields[5])
                     prefixes.append( route )
                 except ValueError:
                     # Not interested on this line
                     pass
 
-        # Add the list of prefixes obtained from a routeserver, ordered
-        # by the AS Paths from the most relevant ASes first, in an
-        # attempt to influence the layour of the resulting D3 graph
-        ixviews.append( dict(routeserver=rs, prefixes=sorted(prefixes, key=lambda prefix: relevant_as(prefix), reverse=True)))
+        for p in prefixes:
+            ixviews.append( p['aspath'] )
 
 with open('../data/nzix.json', 'wb') as ixfile:
-    json.dump(ixviews, ixfile)
+    json.dump(dict(aspath=ixviews), ixfile)
 

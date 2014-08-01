@@ -29,7 +29,9 @@ $(foreach rs,${NZIX_ROUTESERVERS},$(eval $(call NZIX_BGP_template,${rs})))
 data/prefix-aspath.txt: rv-bgp-tables/mrt2txt.sh $(RV_MRT_FILES)
 	bash rv-bgp-tables/mrt2txt.sh $(RV_MRT_FILES)
 
-data/rv-nz-as-rels.json: data/rv-nz-aspath.json \
+data/nz-as-rels.json: as-relationships/get-as-relationships.py \
+                            data/rv-nz-aspath.json \
+                            data/nzix.json \
                             as-rank/20140601.as-rel.txt \
                             data/local-as-rel-info.csv
 	python as-relationships/get-as-relationships.py \
@@ -50,9 +52,9 @@ nz-trace-destinations/delegated-apnic-latest:
     wget -q -N http://ftp.apnic.net/stats/apnic/delegated-apnic-latest.md5 && \
 	md5sum -c delegated-apnic-latest.md5 && cd ..
 
-data/as-list.txt: data/rv-nz-aspath.json data/nzix.json \
-                    nz-bgp-map/extract-unique-asn.py
-	cd nz-bgp-map && python extract-unique-asn.py && cd ..
+# data/as-list.txt: data/rv-nz-aspath.json data/nzix.json \
+#                     nz-bgp-map/extract-unique-asn.py
+# 	cd nz-bgp-map && python extract-unique-asn.py && cd ..
 
 data/as-info.json: data/as-list.txt nz-bgp-map/fetch-as-names.py
 	cd nz-bgp-map && python fetch-as-names.py && cd ..
