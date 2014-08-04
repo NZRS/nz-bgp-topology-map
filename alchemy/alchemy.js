@@ -608,7 +608,7 @@
       if (!alchemy.conf.extraDataSource || c.expanded || alchemy.conf.unexpandable.indexOf(c.type === !-1)) {
         return;
       }
-      $('<div id="loading-spi"></div>nner').show();
+      $('<div id="loading-spinner">').show();
       console.log("loading more data for " + c.id);
       c.expanded = true;
       d3.json(alchemy.conf.extraDataSource + c.id, loadMoreNodes);
@@ -647,15 +647,24 @@
     },
     clickZoom: function(direction) {
       var endTransform, startTransform;
+      var zoomDelta = 0.1;
       startTransform = alchemy.vis.attr("transform").match(/(-*\d+\.*\d*)/g).map(function(a) {
         return parseFloat(a);
       });
       endTransform = startTransform;
       alchemy.vis.attr("transform", function() {
         if (direction === "in") {
-          return "translate(" + endTransform.slice(0, 2) + ") scale(" + (endTransform[2] = endTransform[2] + 0.2) + ")";
+          if (endTransform[2] + zoomDelta <= alchemy.conf.scaleExtent[1])
+          {
+            endTransform[2] += zoomDelta;
+          }
+          return "translate(" + endTransform.slice(0, 2) + ") scale(" + endTransform[2] + ")";
         } else if (direction === "out") {
-          return "translate(" + endTransform.slice(0, 2) + ") scale(" + (endTransform[2] = endTransform[2] - 0.2) + ")";
+          if (endTransform[2] - zoomDelta >= alchemy.conf.scaleExtent[0])
+          {
+            endTransform[2] -= zoomDelta;
+          }
+          return "translate(" + endTransform.slice(0, 2) + ") scale(" + endTransform[2] + ")";
         } else if (direction === "reset") {
           return "translate(" + alchemy.conf.initialTranslate + ") scale(" + alchemy.conf.initialScale + ")";
         } else {
@@ -927,6 +936,7 @@
       return;
     }
     d3.select(window).on('resize', windowResize);
+    alchemy.statusBar.update('Initializing dataset');
     alchemy.nodes = data.nodes;
     alchemy.edges = data.edges;
     activeFilters = d3.map();
@@ -957,6 +967,7 @@
         alchemy[alchemy.conf.preLoad] = true;
       }
     }
+    alchemy.statusBar.update('Initializing visualization');
     alchemy.vis = d3.select(alchemy.conf.divSelector)
         .attr("style", "width:" + (alchemy.conf.graphWidth()) +
                        "px; height:" + (alchemy.conf.graphHeight()) + "px")
@@ -968,19 +979,15 @@
                 .call(alchemy.interactions.zoom(alchemy.conf.scaleExtent))
             .append('g')
                 .attr("transform", "translate(" + alchemy.conf.initialTranslate + ") scale(" + alchemy.conf.initialScale + ")");
-    // Try to append a div on top of the divSelector to put a message
-    d3.select(alchemy.conf.divSelector)
-        .append("div")
-            .attr('style', {'width': '200px', 'height': '100px', 'fill':
-            'white' })
-            .html("STATUS LINE");
     k = Math.sqrt(alchemy.nodes.length / (alchemy.conf.graphWidth() * alchemy.conf.graphHeight()));
     alchemy.force = d3.layout.force().charge(alchemy.layout.charge(k)).linkDistance(function(d) {
       return alchemy.conf.linkDistance(d, k);
     }).theta(1.0).gravity(alchemy.layout.gravity(k)).linkStrength(alchemy.layout.linkStrength).friction(alchemy.layout.friction()).chargeDistance(alchemy.layout.chargeDistance()).size([alchemy.conf.graphWidth(), alchemy.conf.graphHeight()]).nodes(alchemy.nodes).links(alchemy.edges).on("tick", alchemy.layout.tick);
     alchemy.updateGraph();
+    alchemy.statusBar.update('Preparing dashboard');
     alchemy.controlDash.init();
     if (!alchemy.conf.forceLocked) {
+      alchemy.statusBar.update('Running layout calculation');
       alchemy.force.on("tick", alchemy.layout.tick).start();
     }
     if (alchemy.conf.afterLoad != null) {
@@ -997,6 +1004,7 @@
     if (alchemy.conf.initialTranslate !== alchemy.defaults.initialTranslate) {
       alchemy.interactions.zoom().translate(alchemy.conf.initialTranslate);
     }
+    alchemy.statusBar.destroy();
   };
 
   alchemy.stats = {
@@ -1319,13 +1327,33 @@
     divSelector: '#alchemy',
     dataSource: null,
     initialScale: 0.3,
-    initialTranslate: [-600, -1000],
+    initialTranslate: [600, 100],
     scaleExtent: [0.3, 2.0],
     warningMessage: "There be no data!  What's going on?"
   };
 
+  alchemy.statusBar = {
+    init: function(initialStatus) {
+        d3.select(alchemy.conf.divSelector)
+            .append("div")
+                .attr('id', 'load-status-bar')
+                .style('width', '100%')
+                .style('height', '20px')
+                .style('fill', 'white')
+                .html(initialStatus);
+    },
+    update: function(statusText) {
+        d3.select("#load-status-bar")
+            .html(statusText);
+    },
+    destroy: function() {
+        d3.select('#load-status-bar').remove();
+    }
+  };
+
   alchemy.begin = function(userConf) {
     alchemy.conf = _.assign({}, alchemy.defaults, userConf);
+    alchemy.statusBar.init('Initializing visualization');
     if (typeof alchemy.conf.dataSource === 'string') {
       return d3.json(alchemy.conf.dataSource, alchemy.startGraph);
     } else if (typeof alchemy.conf.dataSource === 'object') {
