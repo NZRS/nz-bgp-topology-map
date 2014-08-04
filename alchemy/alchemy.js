@@ -1,6 +1,6 @@
 (function() {
   "Alchemy.js is a graph drawing application for the web.\nCopyright (C) 2014  GraphAlchemist, Inc.\n\nThis program is free software: you can redistribute it and/or modify\nit under the terms of the GNU Affero General Public License as published by\nthe Free Software Foundation, either version 3 of the License, or\n(at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU Affero General Public License for more details.\n\nYou should have received a copy of the GNU Affero General Public License\nalong with this program.  If not, see <http://www.gnu.org/licenses/>.\nlets";
-  var Alchemy, allCaptions, allTags, container, currentNodeTypes, currentRelationshipTypes, nodeDragStarted, nodeDragended, nodeDragged, rootNodeId;
+  var Alchemy, allCaptions, allTags, container, currentNodeTypes, currentRelationshipTypes, nodeDragStarted, nodeDragended, nodeDragged, rootNodeId, windowResize;
 
   var nodesMap, linksIndex = {};
 
@@ -908,6 +908,12 @@
     }
   };
 
+  windowResize = function() {
+    d3.select(alchemy.conf.divSelector)
+        .style('height', window.innerHeight)
+        .style('width',  window.innerWidth)
+  };
+
   alchemy.startGraph = function(data) {
     var k, no_results;
     if (d3.select(alchemy.conf.divSelector).empty()) {
@@ -920,6 +926,7 @@
       $('#loading-spinner').hide();
       return;
     }
+    d3.select(window).on('resize', windowResize);
     alchemy.nodes = data.nodes;
     alchemy.edges = data.edges;
     activeFilters = d3.map();
@@ -950,7 +957,23 @@
         alchemy[alchemy.conf.preLoad] = true;
       }
     }
-    alchemy.vis = d3.select(alchemy.conf.divSelector).attr("style", "width:" + (alchemy.conf.graphWidth()) + "px; height:" + (alchemy.conf.graphHeight()) + "px").append("svg").attr("xmlns", "http://www.w3.org/2000/svg").attr("pointer-events", "all").on("dblclick.zoom", null).on('click', alchemy.utils.deselectAll).call(alchemy.interactions.zoom(alchemy.conf.scaleExtent)).append('g').attr("transform", "translate(" + alchemy.conf.initialTranslate + ") scale(" + alchemy.conf.initialScale + ")");
+    alchemy.vis = d3.select(alchemy.conf.divSelector)
+        .attr("style", "width:" + (alchemy.conf.graphWidth()) +
+                       "px; height:" + (alchemy.conf.graphHeight()) + "px")
+        .append("svg")
+            .attr("xmlns", "http://www.w3.org/2000/svg")
+            .attr("pointer-events", "all")
+            .on("dblclick.zoom", null)
+            .on('click', alchemy.utils.deselectAll)
+                .call(alchemy.interactions.zoom(alchemy.conf.scaleExtent))
+            .append('g')
+                .attr("transform", "translate(" + alchemy.conf.initialTranslate + ") scale(" + alchemy.conf.initialScale + ")");
+    // Try to append a div on top of the divSelector to put a message
+    d3.select(alchemy.conf.divSelector)
+        .append("div")
+            .attr('style', {'width': '200px', 'height': '100px', 'fill':
+            'white' })
+            .html("STATUS LINE");
     k = Math.sqrt(alchemy.nodes.length / (alchemy.conf.graphWidth() * alchemy.conf.graphHeight()));
     alchemy.force = d3.layout.force().charge(alchemy.layout.charge(k)).linkDistance(function(d) {
       return alchemy.conf.linkDistance(d, k);
