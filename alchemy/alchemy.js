@@ -1196,7 +1196,6 @@
         _ref = alchemy.conf.edgeTypes;
         var symHeight, symWidth;
         legendHeight = 30;
-        legendWidth  = 200;
         lineWidth = 35;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           edgeType = _ref[_i];
@@ -1205,8 +1204,9 @@
             .attr('class', 'list-group-item edgeLegendItem');
           d3.select('#edgeLegend-item-'+edgeType)
             .append('svg')
-                .style( {'width': legendWidth, 'height': legendHeight} )
+                .style( {'width': '100%', 'height': legendHeight} )
             .append('g')
+                .style( {'height': '100%'} )
             .append('line')
             .attr('class', 'edge '+edgeType)
             .attr('style', 'stroke-opacity:1.0;stroke-width:4')
@@ -1218,7 +1218,7 @@
           d3.select('#edgeLegend-item-'+edgeType+ ' svg g')
             .append('svg:text')
             .attr('class', 'edgeLegendLabel')
-            .attr('transform', 'translate('+ (lineWidth + 5) + ',15)')
+            .attr('transform', 'translate('+ (lineWidth + 5) + ',20)')
             .attr('style', 'text-anchor: start;')
             .html(alchemy.conf.edgeLabels[edgeType]);
         }

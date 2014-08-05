@@ -46,6 +46,7 @@
 .nodeLegendLabel {
     fill: white;
     font-size: 18px;
+    text-anchor: start;
 }
 
 .edgeLegendLabel {
