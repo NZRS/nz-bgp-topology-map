@@ -12,7 +12,7 @@ RV_MRT_FILES := $(wildcard rv-bgp-tables/*/rib.*.bz2)
 data/nz-bgp-map.json: nz-bgp-map/aspath2d3.py data/nzix.json \
                         data/rv-nz-as-rels.json \
                         data/as-from-rir.tsv \
-                        nz-bgp-map/substitute-as.json \
+                        data/substitute-as.json \
                         data/as-info.json 
 	cd nz-bgp-map && python aspath2d3.py && cd ..
 

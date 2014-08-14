@@ -22,7 +22,7 @@ def edge_rel2class(rel):
     return rel2class.get(rel, 'noinfo')
 
 # Preload the list of substitute ASNs
-with open('substitute-as.json', 'rb') as sub_as_file:
+with open('../data/substitute-as.json', 'rb') as sub_as_file:
     as_sub_list = json.load(sub_as_file)
 
 # Preload the IX information
