@@ -13,14 +13,14 @@ data/nz-bgp-map.json: nz-bgp-map/aspath2d3.py data/nzix.json \
                         data/rv-nz-as-rels.json \
                         data/as-from-rir.tsv \
                         data/substitute-as.json \
-                        data/as-info.json 
+                        data/as-info.json
 	cd nz-bgp-map && python aspath2d3.py && cd ..
 
 data/nzix.json: nzix-bgp-tables/parse-bgp-txt.py $(NZIX_BGP_REQS)
 	cd nzix-bgp-tables && python ./parse-bgp-txt.py $(NZIX_BGP_FILES) && cd ..
 
 define NZIX_BGP_template
-nzix-bgp-tables/${1}.txt: nzix-bgp-tables/fetch-bgp-tables.sh 
+nzix-bgp-tables/${1}.txt: nzix-bgp-tables/fetch-bgp-tables.sh
 	cd nzix-bgp-tables && bash fetch-bgp-tables.sh ${1} && cd ..
 endef
 
@@ -45,7 +45,7 @@ data/rv-nz-aspath.json: data/prefix-aspath.txt \
 data/as-from-rir.tsv: nz-trace-destinations/list-nz-as.py \
         nz-trace-destinations/delegated-apnic-latest
 	cd nz-trace-destinations && python list-nz-as.py && cd ..
-	
+
 nz-trace-destinations/delegated-apnic-latest:
 	cd nz-trace-destinations && wget -q -N \
     http://ftp.apnic.net/stats/apnic/delegated-apnic-latest && \
@@ -66,6 +66,7 @@ deploy-test: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.h
 	install data/nz-bgp-map.alchemy.json /var/www/alchemy/data
 	install web-frontend/force.html /var/www/nz-bgp-map.html
 	install web-frontend/alchemy.html /var/www/alchemy/index.html
+	install web-frontend/test.html /var/www/alchemy/test.html
 	install alchemy/alchemy.js alchemy/vendor.js /var/www/alchemy/scripts/
 	rsync -a web-frontend/nzrs.css alchemy/styles/*.css \
         alchemy/styles/fonts alchemy/styles/images /var/www/alchemy/styles/

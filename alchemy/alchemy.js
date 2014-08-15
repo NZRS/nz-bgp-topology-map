@@ -828,7 +828,7 @@
     linkDistancefn: function(edge, k) {
       if (alchemy.conf.cluster) {
         if (edge.source.root || edge.target.root) {
-          300;
+          return 300;
         }
         if (edge.source.cluster === edge.target.cluster) {
           return 10;
