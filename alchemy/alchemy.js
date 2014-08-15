@@ -803,14 +803,14 @@
         for (_j = 1, _len1 = rootNodes.length; _j < _len1; _j++) {
           n = rootNodes[_j];
           pn = rootNodes[_j-1];
-          alchemy.nodes[n.i].x = alchemy.conf.cliqueNodeRadius * 
+          alchemy.nodes[n.i].x = alchemy.conf.cliqueNodeRadius *
               Math.cos(theta) + container.width / 2;
           alchemy.nodes[n.i].y = alchemy.conf.cliqueNodeRadius *
               Math.sin(theta) + container.height / 2;
           var inter_node_r = alchemy.nodes[n.i].r + alchemy.nodes[pn.i].r + 20;
           theta += Math.atan(inter_node_r / alchemy.conf.cliqueNodeRadius)
 /*
-          alchemy.nodes[n.i].x = alchemy.conf.cliqueNodeRadius * 
+          alchemy.nodes[n.i].x = alchemy.conf.cliqueNodeRadius *
               Math.cos(2*Math.PI*_j/(_len1-1)) + container.width / 2;
           alchemy.nodes[n.i].y = alchemy.conf.cliqueNodeRadius *
               Math.sin(2*Math.PI*_j/(_len1-1)) + container.height / 2;
@@ -1235,7 +1235,6 @@
   };
 
   alchemy.updateGraph = function(start) {
-    var initialComputationDone;
     if (start == null) {
       start = true;
     }
@@ -1247,15 +1246,12 @@
     if (start) {
       this.force.start();
     }
-    if (!initialComputationDone) {
-      while (this.force.alpha() > 0.001) {
-        alchemy.force.tick();
-      }
-      initialComputationDone = true;
-      console.log(Date() + ' completed initial computation');
-      if (alchemy.conf.locked) {
-        alchemy.force.stop();
-      }
+    while (this.force.alpha() > 0.001) {
+      alchemy.force.tick();
+    }
+    console.log(Date() + ' completed initial computation');
+    if (alchemy.conf.locked) {
+      alchemy.force.stop();
     }
     alchemy.styles.edgeGradient(alchemy.edges);
     alchemy.drawing.drawedges(alchemy.edge);
