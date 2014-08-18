@@ -10,7 +10,6 @@
 
     <script src="scripts/vendor.js"></script>
     <script src="scripts/alchemy.js"></script>
-    <script src="/d3/d3.js" charset="utf-8"></script>
     <script type="text/javascript">
 
         var deg_domain = [1, 250];
@@ -38,8 +37,8 @@
                         .range(['#707070', 'black']),
             'priv':  d3.scale.linear()
                         .domain(deg_domain)
-                        .range(['blue', 'blue']),
-        }
+                        .range(['blue', 'blue'])
+        };
 
         var config = {
             dataSource: 'data/nz-bgp-map.alchemy.json',
@@ -77,7 +76,7 @@
             showLegend: true,
             nodeLegend: true,
             edgeLegend: true,
-            forceLocked: true,
+            forceLocked: true
             };
 
         alchemy.begin(config)

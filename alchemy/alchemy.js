@@ -721,26 +721,19 @@
         return 0.9;
       }
     },
-    collide: function(node) {
+    collide: function (node) {
       var nx1, nx2, ny1, ny2, r;
-/*
-      rootKey = alchemy.conf.rootNodes;
-      if ((node[rootKey] != null) && node[rootKey]) {
-        return function(quad, x1, y1, x2, y2) { return true; };
-      }
-*/
       r = 2.4 * alchemy.utils.nodeSize(node) + alchemy.conf.nodeOverlap;
       nx1 = node.x - r;
       nx2 = node.x + r;
       ny1 = node.y - r;
       ny2 = node.y + r;
-      return function(quad, x1, y1, x2, y2) {
+      return function (quad, x1, y1, x2, y2) {
         var l, x, y;
         if (quad.point && (quad.point !== node)) {
           x = node.x - Math.abs(quad.point.x);
           y = node.y - quad.point.y;
           l = Math.sqrt(x * x + y * y);
-          r = r;
           if (l < r) {
             l = (l - r) / l * alchemy.conf.alpha;
             node.x -= x *= l;
@@ -753,14 +746,17 @@
       };
     },
     tick: function() {
-      var node, q, _i, _len, _ref;
+      var node, quadTree, _i, _len, _ref;
       if (alchemy.conf.collisionDetection) {
-        q = d3.geom.quadtree(alchemy.nodes);
+        quadTree = d3.geom.quadtree(alchemy.nodes);
         _ref = alchemy.nodes;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          node = _ref[_i];
-          q.visit(alchemy.layout.collide(node));
-        }
+          for (var i = 0; i < 3; i++) {
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              node = _ref[_i];
+              quadTree.visit(alchemy.layout.collide(node));
+            }
+          }
+
       }
       alchemy.edge.attr("x1", function(d) {
         return d.source.x;
@@ -781,7 +777,7 @@
         width: alchemy.conf.graphWidth(),
         height: alchemy.conf.graphHeight()
       };
-      rootNodes = Array();
+      rootNodes = [];
       _ref = alchemy.nodes;
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
         n = _ref[i];
@@ -803,14 +799,14 @@
         for (_j = 1, _len1 = rootNodes.length; _j < _len1; _j++) {
           n = rootNodes[_j];
           pn = rootNodes[_j-1];
-          alchemy.nodes[n.i].x = alchemy.conf.cliqueNodeRadius * 
+          alchemy.nodes[n.i].x = alchemy.conf.cliqueNodeRadius *
               Math.cos(theta) + container.width / 2;
           alchemy.nodes[n.i].y = alchemy.conf.cliqueNodeRadius *
               Math.sin(theta) + container.height / 2;
           var inter_node_r = alchemy.nodes[n.i].r + alchemy.nodes[pn.i].r + 20;
           theta += Math.atan(inter_node_r / alchemy.conf.cliqueNodeRadius)
 /*
-          alchemy.nodes[n.i].x = alchemy.conf.cliqueNodeRadius * 
+          alchemy.nodes[n.i].x = alchemy.conf.cliqueNodeRadius *
               Math.cos(2*Math.PI*_j/(_len1-1)) + container.width / 2;
           alchemy.nodes[n.i].y = alchemy.conf.cliqueNodeRadius *
               Math.sin(2*Math.PI*_j/(_len1-1)) + container.height / 2;
@@ -828,7 +824,7 @@
     linkDistancefn: function(edge, k) {
       if (alchemy.conf.cluster) {
         if (edge.source.root || edge.target.root) {
-          300;
+          return 300;
         }
         if (edge.source.cluster === edge.target.cluster) {
           return 10;
@@ -1235,7 +1231,6 @@
   };
 
   alchemy.updateGraph = function(start) {
-    var initialComputationDone;
     if (start == null) {
       start = true;
     }
@@ -1247,15 +1242,12 @@
     if (start) {
       this.force.start();
     }
-    if (!initialComputationDone) {
-      while (this.force.alpha() > 0.001) {
-        alchemy.force.tick();
-      }
-      initialComputationDone = true;
-      console.log(Date() + ' completed initial computation');
-      if (alchemy.conf.locked) {
-        alchemy.force.stop();
-      }
+    while (this.force.alpha() > 0.001) {
+      alchemy.force.tick();
+    }
+    console.log(Date() + ' completed initial computation');
+    if (alchemy.conf.locked) {
+      alchemy.force.stop();
     }
     alchemy.styles.edgeGradient(alchemy.edges);
     alchemy.drawing.drawedges(alchemy.edge);
@@ -1264,7 +1256,6 @@
     alchemy.vis.selectAll('g.node').attr('transform', function(d) {
       return "translate(" + d.x + ", " + d.y + ")";
     });
-    alchemy.layout.positionRootNodes();
     return alchemy.node.exit().remove();
   };
 
