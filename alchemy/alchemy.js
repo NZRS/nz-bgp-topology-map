@@ -947,19 +947,6 @@
     alchemy.edges = data.edges;
     activeFilters = d3.map();
     nodesMap = d3.map();
-      // try initial placement based on country
-      alchemy.nodes.forEach(function (n, i) {
-          var startPos = 0;
-
-          if (n.country.toLowerCase() == "nz") {
-              startPos = 120;
-          }
-          else if (n.country.toLowerCase() == "au") {
-              startPos = 200
-          }
-          n.y += startPos + (Math.random() * 40) + i;
-          n.x += startPos + (Math.random() * 40) + i;
-      });
     alchemy.nodes.forEach(function(n) {
       n.clicked = false;
       return nodesMap.set(n.id, n);
