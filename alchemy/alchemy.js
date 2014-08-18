@@ -559,25 +559,15 @@
     if (!alchemy.conf.forceLocked) {
       alchemy.force.start();
     }
-    alchemy.edge
-        .attr("x1", function(d) {
+    alchemy.edge.attr("x1", function(d) {
       return d.source.x;
     }).attr("y1", function(d) {
       return d.source.y;
-    })
-        .attr("x2", function(d) {
+    }).attr("x2", function(d) {
       return d.target.x;
     }).attr("y2", function(d) {
       return d.target.y;
-    })
-        .attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
-      var i = 0
-      alchemy.edge.forEach(function (n) {
-          if (!n.target) {
-              i++;
-          }
-      })
-      console.log(i)
+    }).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
   };
 
   nodeDragended = function(d, i) {
