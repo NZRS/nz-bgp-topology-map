@@ -559,15 +559,25 @@
     if (!alchemy.conf.forceLocked) {
       alchemy.force.start();
     }
-    alchemy.edge.attr("x1", function(d) {
+    alchemy.edge
+        .attr("x1", function(d) {
       return d.source.x;
     }).attr("y1", function(d) {
       return d.source.y;
-    }).attr("x2", function(d) {
+    })
+        .attr("x2", function(d) {
       return d.target.x;
     }).attr("y2", function(d) {
       return d.target.y;
-    }).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+    })
+        .attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+      var i = 0
+      alchemy.edge.forEach(function (n) {
+          if (!n.target) {
+              i++;
+          }
+      })
+      console.log(i)
   };
 
   nodeDragended = function(d, i) {
@@ -721,7 +731,7 @@
         return 0.9;
       }
     },
-    collide: function(node) {
+    collideMoveFromCenter: function(node) {
       var nx1, nx2, ny1, ny2, r;
 /*
       rootKey = alchemy.conf.rootNodes;
@@ -729,7 +739,7 @@
         return function(quad, x1, y1, x2, y2) { return true; };
       }
 */
-      r = 2.4 * alchemy.utils.nodeSize(node) + alchemy.conf.nodeOverlap;
+      r = 2.4 * alchemy.utils.nodeSize(node) //+ alchemy.conf.nodeOverlap;
       nx1 = node.x - r;
       nx2 = node.x + r;
       ny1 = node.y - r;
@@ -737,30 +747,85 @@
       return function(quad, x1, y1, x2, y2) {
         var l, x, y;
         if (quad.point && (quad.point !== node)) {
-          x = node.x - Math.abs(quad.point.x);
-          y = node.y - quad.point.y;
+          x = Math.abs(node.x - quad.point.x);
+          y = Math.abs(node.y - quad.point.y);
           l = Math.sqrt(x * x + y * y);
-          r = r;
-          if (l < r) {
-            l = (l - r) / l * alchemy.conf.alpha;
-            node.x -= x *= l;
-            node.y -= y *= l;
-            quad.point.x += x;
-            quad.point.y += y;
+          var pointRadius = 2.4 * alchemy.utils.nodeSize(quad.point) //+ alchemy.conf.nodeOverlap;
+          if (l < r + pointRadius) {
+//            l = (l - r) / l * alchemy.conf.alpha;
+//            node.x -= x *= l;
+//            node.y -= y *= l;
+//            quad.point.x += x;
+//            quad.point.y += y;
+//            x *= l*2;
+//            y *= l*2;
+              //TODO fix case where something is positioned in the center
+            var graphCenterX = alchemy.conf.graphWidth() / 2;
+            var graphCenterY = alchemy.conf.graphHeight() / 2;
+            //move along line from center
+              var dx = graphCenterX - quad.point.x;
+              var dy = graphCenterY - quad.point.y;
+              var xMovementRatio = (dx / (dx+dy));
+              var yMovementRatio = (dy / (dx+dy));
+              var xDirection = dx < 0 ? -1 : 1;
+              var yDirection = dy < 0 ? -1 : 1;
+            quad.point.x += xMovementRatio * pointRadius * 2 * xDirection;
+            quad.point.y += yMovementRatio * pointRadius * 2 * yDirection;
+
           }
         }
         return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
       };
     },
+    collide: function (node) {
+          var nx1, nx2, ny1, ny2, r;
+          /*
+           rootKey = alchemy.conf.rootNodes;
+           if ((node[rootKey] != null) && node[rootKey]) {
+           return function(quad, x1, y1, x2, y2) { return true; };
+           }
+           */
+          r = 2.4 * alchemy.utils.nodeSize(node) + alchemy.conf.nodeOverlap;
+          nx1 = node.x - r;
+          nx2 = node.x + r;
+          ny1 = node.y - r;
+          ny2 = node.y + r;
+          return function (quad, x1, y1, x2, y2) {
+              var l, x, y;
+              if (quad.point && (quad.point !== node)) {
+                  x = node.x - Math.abs(quad.point.x);
+                  y = node.y - quad.point.y;
+                  l = Math.sqrt(x * x + y * y);
+                  if (l < r) {
+                      l = (l - r) / l * alchemy.conf.alpha;
+                      node.x -= x *= l;
+                      node.y -= y *= l;
+                      if (isNaN(node.x) || isNaN(node.y)) {
+                          debugger;
+                      }
+                      quad.point.x += x;
+                      quad.point.y += y;
+                  }
+              }
+              return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+          };
+      },
     tick: function() {
-      var node, q, _i, _len, _ref;
+      var node, quadTree, _i, _len, _ref;
       if (alchemy.conf.collisionDetection) {
-        q = d3.geom.quadtree(alchemy.nodes);
+        quadTree = d3.geom.quadtree(alchemy.nodes);
         _ref = alchemy.nodes;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          node = _ref[_i];
-          q.visit(alchemy.layout.collide(node));
-        }
+          for (var i = 0; i < 3; i++) {
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              node = _ref[_i];
+              quadTree.visit(alchemy.layout.collide(node));
+            }
+          }
+//          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+//              node = _ref[_i];
+//              quadTree.visit(alchemy.layout.collideMoveFromCenter(node));
+//          }
+
       }
       alchemy.edge.attr("x1", function(d) {
         return d.source.x;
@@ -781,7 +846,7 @@
         width: alchemy.conf.graphWidth(),
         height: alchemy.conf.graphHeight()
       };
-      rootNodes = Array();
+      rootNodes = [];
       _ref = alchemy.nodes;
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
         n = _ref[i];
@@ -941,6 +1006,19 @@
     alchemy.edges = data.edges;
     activeFilters = d3.map();
     nodesMap = d3.map();
+      // try initial placement based on country
+      alchemy.nodes.forEach(function (n, i) {
+          var startPos = 0;
+
+          if (n.country.toLowerCase() == "nz") {
+              startPos = 120;
+          }
+          else if (n.country.toLowerCase() == "au") {
+              startPos = 200
+          }
+          n.y += startPos + (Math.random() * 40) + i;
+          n.x += startPos + (Math.random() * 40) + i;
+      });
     alchemy.nodes.forEach(function(n) {
       n.clicked = false;
       return nodesMap.set(n.id, n);
@@ -1260,7 +1338,7 @@
     alchemy.vis.selectAll('g.node').attr('transform', function(d) {
       return "translate(" + d.x + ", " + d.y + ")";
     });
-    alchemy.layout.positionRootNodes();
+//    alchemy.layout.positionRootNodes();
     return alchemy.node.exit().remove();
   };
 
