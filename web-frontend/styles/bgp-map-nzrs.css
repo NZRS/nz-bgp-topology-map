@@ -1,25 +1,25 @@
 /* Nodes */
-.IX circle {
+circle.IX {
     fill: red;
     stroke: #E34234;
 }
 
-.NZ circle {
+circle.NZ {
     fill: black;
     stroke: #707070;
 }
 
-.AU circle {
+circle.AU {
     fill: yellow;
     stroke: #FFFFCC;
 }
 
-.other circle {
+circle.other {
     fill: green;
     stroke: limegreen;
 }
 
-.priv circle {
+circle.priv {
     fill: blue;
     stroke: lightblue;
 }
@@ -43,19 +43,28 @@
     stroke-dasharray: 8,2;
 }
 
-.nodeLegendLabel {
+text.nodeLegendLabel {
     fill: white;
-    font-size: 18px;
+    font-size: 95%;
     text-anchor: start;
+    display: initial !important;
 }
 
-.edgeLegendLabel {
+text.edgeLegendLabel {
     fill: white;
-    font-size: 18px;
+    font-size: 95%;
+    display: initial !important;
+    padding: 0px;
 }
 
 .edgeLegendItem {
-    height: 40px;
+    height: 30px;
+}
+
+/* Drupal adds an icon to list elements, overwritting */
+#content-area ul li {
+    background: initial;
+    padding-left: 20px;
 }
 
 .nodeLegendItem {
@@ -64,12 +73,25 @@
 
 .legendHeader {
     color: white;
+    max-width: 80px;
 }
 
 h3.legendHeader {
     padding-left: 10px;
+    font-size: 110%;
+    line-height: 1.5;
 }
 
 h4.legendHeader {
     padding-left: 20px;
+    font-size: 90%;
+    line-height: 1.2;
+}
+
+
+/* This fixes the placement of the navigation bar in Drupal */
+#navigation {
+    position: absolute;
+    top: 0px;
+    left: 0px;
 }

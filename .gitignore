@@ -1,3 +1,4 @@
+.DS_Store
 plot-traces/*.png
 plot-traces/*.dot
 download-traces/*.json

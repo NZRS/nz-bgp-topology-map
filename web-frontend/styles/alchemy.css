@@ -101,7 +101,7 @@ svg {
   font-size: 32px;
 }
 
-.node text {
+g.node > text {
   display: none;
   fill: white;
   font-weight: 100;
@@ -240,7 +240,7 @@ svg {
   color: #e89619;
 }
 
-#search {
+#map-search {
   margin-top: 2em;
   margin-bottom: 1em;
   padding: .5em 1em;
@@ -254,7 +254,7 @@ svg {
 #search input {
   background-color: black;
   border: none;
-  font-size: 20px;
+  font-size: 100%;
   color: white;
   padding-left: 0.5em;
 }
@@ -444,7 +444,7 @@ svg {
 }
 
 #filters #filter-header {
-  padding: 10px;
+  padding: 5px 0px;
 }
 
 #filters #filter-relationships,
@@ -452,11 +452,12 @@ svg {
 #filters #filter-nodes {
   background-color: transparent;
   display: inline-block;
-  width: 45%;
+  width: 90%;
   margin-left: 2%;
   overflow: auto;
-  text-align: center;
+  text-align: left;
   vertical-align: top;
+  color: gray;
 }
 
 #filters #filter-relationships #filter-node-header,

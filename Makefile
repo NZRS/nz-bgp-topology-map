@@ -1,13 +1,17 @@
 all: data/nz-bgp-map.json
 
 IX_LIST=wix chix hix pnix ape
-# IX_LIST=pnix hix
 
 NZIX_ROUTESERVERS := $(foreach ix,$(IX_LIST),$(foreach n,1 2,rs$(n).$(ix).nzix.net))
 NZIX_BGP_REQS := $(foreach rs,$(NZIX_ROUTESERVERS),nzix-bgp-tables/$(rs).txt)
 NZIX_BGP_FILES := $(foreach rs,$(NZIX_ROUTESERVERS),$(rs).txt)
 
 RV_MRT_FILES := $(wildcard rv-bgp-tables/*/rib.*.bz2)
+
+PROD_SERVER ?= turista
+PROD_DIR ?= /var/www/html
+DRUPAL_SERVER = srsov-drupal1
+DRUPAL_DIR = bgp-map
 
 data/nz-bgp-map.json: nz-bgp-map/aspath2d3.py data/nzix.json \
                         data/rv-nz-as-rels.json \
@@ -71,13 +75,15 @@ deploy-test: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.h
 	rsync -a web-frontend/nzrs.css alchemy/styles/*.css \
         alchemy/styles/fonts alchemy/styles/images /var/www/alchemy/styles/
 
-deploy-prod: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.html
-	ssh turista 'mkdir -p /var/www/html/nz-bgp-map/data /var/www/html/d3 /var/www/html/alchemy/{data,scripts,styles}'
-	rsync -a d3/*.js turista:/var/www/html/d3
-	rsync -a data/nz-bgp-map.json turista:/var/www/html/nz-bgp-map/data
-	rsync -a data/nz-bgp-map.alchemy.json turista:/var/www/html/alchemy/data
-	scp web-frontend/force.html turista:/var/www/html/nz-bgp-map/index.html
-	rsync -a web-frontend/alchemy.html turista:/var/www/html/alchemy/index.html
-	rsync -a web-frontend/nzrs.css alchemy/styles/*.css \
-        alchemy/styles/fonts alchemy/styles/images turista:/var/www/html/alchemy/styles
-	rsync -a alchemy/*.js turista:/var/www/html/alchemy/scripts
+deploy-standalone: data/nz-bgp-map.json web-frontend/alchemy.html
+	ssh ${PROD_SERVER} 'mkdir -p ${PROD_DIR} && cd ${PROD_DIR} && mkdir -p misc/data d3 scripts styles'
+	rsync -a data/nz-bgp-map.alchemy.json ${PROD_SERVER}:${PROD_DIR}/misc/data
+	rsync -a web-frontend/alchemy.html ${PROD_SERVER}:${PROD_DIR}/index.html
+	rsync -a web-frontend/styles/* ${PROD_SERVER}:${PROD_DIR}/styles/
+	rsync -a web-frontend/scripts/* ${PROD_SERVER}:${PROD_DIR}/scripts/
+
+drupal-deploy: data/nz-bgp-map.json web-frontend/alchemy.html
+	ssh ${DRUPAL_SERVER} 'mkdir -p ${DRUPAL_DIR} && cd ${DRUPAL_DIR} && mkdir -p data scripts styles'
+	rsync -a data/nz-bgp-map.alchemy.json ${DRUPAL_SERVER}:${DRUPAL_DIR}/data
+	rsync -a web-frontend/styles/* ${DRUPAL_SERVER}:${DRUPAL_DIR}/styles/
+	rsync -a web-frontend/scripts/* ${DRUPAL_SERVER}:${DRUPAL_DIR}/scripts/

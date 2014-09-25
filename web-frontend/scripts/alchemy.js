@@ -52,7 +52,7 @@
       }
     },
     search: function() {
-      d3.select("#control-dash").append("div").attr("id", "search").html("<div class='input-group'>\n    <input class='form-control' placeholder='Search'>\n    <i class='input-group-addon search-icon'><span class='fa fa-search fa-1x'></span></i>\n</div> ");
+      d3.select("#control-dash").append("div").attr("id", "map-search").html("<div class='input-group'>\n    <input class='form-control' placeholder='Search'>\n    <i class='input-group-addon search-icon'><span class='fa fa-search fa-1x'></span></i>\n</div> ");
       return alchemy.search.init();
     },
     zoomCtrl: function() {
@@ -882,7 +882,7 @@
   alchemy.search = {
     init: function() {
       var searchBox;
-      searchBox = d3.select("#search input");
+      searchBox = d3.select("#map-search input");
       return searchBox.on("keyup", function() {
         var input;
         input = searchBox[0][0].value.toLowerCase();
@@ -895,6 +895,9 @@
         return d3.selectAll(".node").classed("inactive", function(node) {
           var DOMnode, hidden;
           DOMnode = d3.select(this);
+          if (node === undefined) {
+              return false;
+          }
           hidden = DOMnode.text().toLowerCase().indexOf(input) < 0;
           if (hidden) {
             d3.selectAll("[source-target*='" + node.id + "']").classed("inactive", hidden);
@@ -968,6 +971,7 @@
         .attr("style", "width:" + (alchemy.conf.graphWidth()) +
                        "px; height:" + (alchemy.conf.graphHeight()) + "px")
         .append("svg")
+            .attr("id", "alchemy-canvas")
             .attr("xmlns", "http://www.w3.org/2000/svg")
             .attr("pointer-events", "all")
             .on("dblclick.zoom", null)
@@ -975,6 +979,8 @@
                 .call(alchemy.interactions.zoom(alchemy.conf.scaleExtent))
             .append('g')
                 .attr("transform", "translate(" + alchemy.conf.initialTranslate + ") scale(" + alchemy.conf.initialScale + ")");
+    // Clear the event handler for the mouse wheel
+    d3.select(".alchemy svg").on(".wheel", null);
     k = Math.sqrt(alchemy.nodes.length / (alchemy.conf.graphWidth() * alchemy.conf.graphHeight()));
     alchemy.force = d3.layout.force().charge(alchemy.layout.charge(k)).linkDistance(function(d) {
       return alchemy.conf.linkDistance(d, k);
@@ -1413,6 +1419,13 @@
         return alchemy.conf.deselectAll();
       }
     },
+    wheelHandler: function() {
+      if (d3.event.wheelDelta / 120 > 0) {
+        console.log('Wheel Up');
+      } else {
+        console.log('Wheel Down');
+      }
+    },
     centreView: function(id) {
       var delta, level, node, nodeBounds, params, svg, svgBounds, x, y;
       svg = $('#graph').get(0);
@@ -1516,4 +1529,3 @@
 
 }).call(this);
 
-//# sourceMappingURL=alchemy.js.map
