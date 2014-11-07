@@ -1,6 +1,8 @@
 #!/bin/bash
 
+OFILE="data/prefix-aspath.txt"
+rm -f $OFILE
 for rib in $*; do
     echo $rib
-    /opt/bgpdump/bin/bgpdump -m $rib | cut -d\| -f6,7 >> data/prefix-aspath.txt
+    /usr/local/bin/bgpdump -m $rib | cut -d\| -f6,7 >> $OFILE
 done

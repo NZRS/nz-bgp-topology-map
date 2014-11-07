@@ -71,5 +71,5 @@ for aspath_file in ['data/rv-nz-aspath.json', 'data/nzix.json']:
 with open('data/nz-as-rels.json', 'wb') as as_rel_file:
     json.dump(dict(aspaths=as_paths), as_rel_file)
 
-with open('../data/as-list.txt', 'wb') as as_list_file:
+with open('data/as-list.txt', 'wb') as as_list_file:
     as_list_file.writelines([ "{0}\n".format(asn) for asn in as_set ])

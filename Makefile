@@ -8,6 +8,9 @@ NZIX_BGP_FILES := $(foreach rs,$(NZIX_ROUTESERVERS),$(rs).txt)
 
 RV_MRT_FILES := $(wildcard rv-bgp-tables/*/rib.*.bz2)
 
+# This is the day of the AS relationship data we are going to use
+REL_DAY=20141001
+
 PROD_SERVER ?= turista
 PROD_DIR ?= /var/www/html
 DRUPAL_SERVER = srsov-drupal1
@@ -33,10 +36,10 @@ $(foreach rs,${NZIX_ROUTESERVERS},$(eval $(call NZIX_BGP_template,${rs})))
 data/prefix-aspath.txt: rv-bgp-tables/mrt2txt.sh $(RV_MRT_FILES)
 	bash rv-bgp-tables/mrt2txt.sh $(RV_MRT_FILES)
 
-data/nz-as-rels.json: as-relationships/get-as-relationships.py \
+data/rv-nz-as-rels.json: as-relationships/get-as-relationships.py \
                             data/rv-nz-aspath.json \
                             data/nzix.json \
-                            as-rank/20140601.as-rel.txt \
+                            as-rank/$(REL_DAY).as-rel.txt \
                             data/local-as-rel-info.csv
 	python as-relationships/get-as-relationships.py \
         as-rank/20140601.as-rel.txt data/local-as-rel-info.csv
