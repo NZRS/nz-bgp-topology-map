@@ -13,6 +13,7 @@ REL_DAY=20141001
 
 PROD_SERVER ?= turista
 PROD_DIR ?= /var/www/html
+LOCAL_DIR ?= /var/www
 DRUPAL_SERVER = srsov-drupal1
 DRUPAL_DIR = bgp-map
 
@@ -21,10 +22,10 @@ data/nz-bgp-map.json: nz-bgp-map/aspath2d3.py data/nzix.json \
                         data/as-from-rir.tsv \
                         data/substitute-as.json \
                         data/as-info.json
-	cd nz-bgp-map && python aspath2d3.py && cd ..
+	cd nz-bgp-map && /usr/bin/python aspath2d3.py && cd ..
 
 data/nzix.json: nzix-bgp-tables/parse-bgp-txt.py $(NZIX_BGP_REQS)
-	cd nzix-bgp-tables && python ./parse-bgp-txt.py $(NZIX_BGP_FILES) && cd ..
+	cd nzix-bgp-tables && /usr/bin/python ./parse-bgp-txt.py $(NZIX_BGP_FILES) && cd ..
 
 define NZIX_BGP_template
 nzix-bgp-tables/${1}.txt: nzix-bgp-tables/fetch-bgp-tables.sh
@@ -36,22 +37,26 @@ $(foreach rs,${NZIX_ROUTESERVERS},$(eval $(call NZIX_BGP_template,${rs})))
 data/prefix-aspath.txt: rv-bgp-tables/mrt2txt.sh $(RV_MRT_FILES)
 	bash rv-bgp-tables/mrt2txt.sh $(RV_MRT_FILES)
 
+as-rank/$(REL_DAY).as-rel.txt:
+	wget -O - http://data.caida.org/datasets/as-relationships/serial-1/$(REL_DAY).as-rel.txt.bz2 | bzip2 -cd > $@_
+	mv $@_ $@
+
 data/rv-nz-as-rels.json: as-relationships/get-as-relationships.py \
                             data/rv-nz-aspath.json \
                             data/nzix.json \
                             as-rank/$(REL_DAY).as-rel.txt \
                             data/local-as-rel-info.csv
-	python as-relationships/get-as-relationships.py \
-        as-rank/20140601.as-rel.txt data/local-as-rel-info.csv
+	/usr/bin/python as-relationships/get-as-relationships.py \
+        as-rank/$(REL_DAY).as-rel.txt data/local-as-rel-info.csv
 
 data/rv-nz-aspath.json: data/prefix-aspath.txt \
         data/as-from-rir.tsv \
         nz-trace-destinations/find-nz-as-path.py
-	cd nz-trace-destinations && python find-nz-as-path.py && cd ..
+	cd nz-trace-destinations && /usr/bin/python find-nz-as-path.py && cd ..
 
 data/as-from-rir.tsv: nz-trace-destinations/list-nz-as.py \
         nz-trace-destinations/delegated-apnic-latest
-	cd nz-trace-destinations && python list-nz-as.py && cd ..
+	cd nz-trace-destinations && /usr/bin/python list-nz-as.py && cd ..
 
 nz-trace-destinations/delegated-apnic-latest:
 	cd nz-trace-destinations && wget -q -N \
@@ -63,20 +68,18 @@ nz-trace-destinations/delegated-apnic-latest:
 #                     nz-bgp-map/extract-unique-asn.py
 # 	cd nz-bgp-map && python extract-unique-asn.py && cd ..
 
+clean-nzix:
+	rm -f nzix-bgp-tables/*.txt
+
 data/as-info.json: data/as-list.txt nz-bgp-map/fetch-as-names.py
-	cd nz-bgp-map && python fetch-as-names.py && cd ..
+	cd nz-bgp-map && /usr/bin/python fetch-as-names.py && cd ..
 
 deploy-test: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.html
-	mkdir -p /var/www/d3 /var/www/data /var/www/alchemy/data /var/www/alchemy/scripts
-	rsync -a d3/*.js /var/www/d3
-	install data/nz-bgp-map.json /var/www/data
-	install data/nz-bgp-map.alchemy.json /var/www/alchemy/data
-	install web-frontend/force.html /var/www/nz-bgp-map.html
-	install web-frontend/alchemy.html /var/www/alchemy/index.html
-	install web-frontend/test.html /var/www/alchemy/test.html
-	install alchemy/alchemy.js alchemy/vendor.js /var/www/alchemy/scripts/
-	rsync -a web-frontend/nzrs.css alchemy/styles/*.css \
-        alchemy/styles/fonts alchemy/styles/images /var/www/alchemy/styles/
+	cd /var/www && mkdir -p misc/data d3 scripts styles
+	rsync -a data/nz-bgp-map.alchemy.json ${LOCAL_DIR}/misc/data
+	rsync -a web-frontend/alchemy.html ${LOCAL_DIR}/index.html
+	rsync -a web-frontend/styles/* ${LOCAL_DIR}/styles/
+	rsync -a web-frontend/scripts/* ${LOCAL_DIR}/scripts/
 
 deploy-standalone: data/nz-bgp-map.json web-frontend/alchemy.html
 	ssh ${PROD_SERVER} 'mkdir -p ${PROD_DIR} && cd ${PROD_DIR} && mkdir -p misc/data d3 scripts styles'
