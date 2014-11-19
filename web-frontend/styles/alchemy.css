@@ -591,3 +591,24 @@ g.node > text {
   font-weight: 200;
   text-anchor: middle;
 }
+
+#credits {
+  font-weight: 200;
+  color: white;
+  vertical-align: top;
+}
+
+#brand-title {
+  font-weight: 200;
+  font-size: 20px;
+  color: white;
+  text-align: left;
+  float: left;
+  vertical-align: middle;
+  padding-top: 22px;
+}
+
+#brand-image {
+  background: white;
+  float: right;
+}

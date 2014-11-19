@@ -44,15 +44,17 @@
         d3.select("#control-dash-wrapper").append("div").attr("id", "control-dash").attr("class", "col-md-12");
         d3.select('#dash-toggle').on('click', alchemy.interactions.toggleControlDash);
         alchemy.controlDash.zoomCtrl();
+        alchemy.controlDash.brand();
         alchemy.controlDash.search();
         alchemy.controlDash.filters();
-        alchemy.controlDash.stats();
+        // alchemy.controlDash.stats();
         alchemy.controlDash.legend();
+        alchemy.controlDash.credits();
         return alchemy.controlDash.modifyElements();
       }
     },
     search: function() {
-      d3.select("#control-dash").append("div").attr("id", "map-search").html("<div class='input-group'>\n    <input class='form-control' placeholder='Search'>\n    <i class='input-group-addon search-icon'><span class='fa fa-search fa-1x'></span></i>\n</div> ");
+      d3.select("#control-dash").append("div").attr("id", "map-search").attr('class', 'col-md-12').html("<div class='input-group'>\n    <input class='form-control' placeholder='Search'>\n    <i class='input-group-addon search-icon'><span class='fa fa-search fa-1x'></span></i>\n</div> ");
       return alchemy.search.init();
     },
     zoomCtrl: function() {
@@ -69,6 +71,18 @@
         });
       }
     },
+    brand: function() {
+      d3.select("#control-dash").append("div")
+          .attr("id", "brand")
+          .attr("class", "col-md-12")
+          .append("div")
+            .attr("id", "brand-title")
+              .html("<span>NZ BGP Topology Map</span>");
+      d3.select("#brand")   
+          .append("div")
+            .attr("id", "brand-image")
+              .html("<img src=\"/images/nzrs-logo.png\"/>");
+    },
     filters: function() {
       d3.select("#control-dash").append("div").attr("id", "filters");
       return alchemy.filters.init();
@@ -80,6 +94,13 @@
     legend: function() {
       d3.select("#control-dash").append("div").attr("id", "legend");
       return alchemy.legend.init();
+    },
+    credits: function() {
+      d3.select("#control-dash").append("div").attr("id", "credits")
+          .html('<div id="credits-header" data-toggle="collapse" data-target="#credits #all-credits"><h3 class="creditsHeader">Credits</h3><span class = "fa fa-caret-right fa-2x"></span></div><div id="all-credits" class="collapse"></div>');
+      d3.html('/credits.html', function(e, d) {
+          d3.select("#all-credits").node().appendChild(d);
+      });
     },
     modifyElements: function() {
       d3.select("#control-dash").append("div").attr("id", "update-elements");
@@ -935,7 +956,7 @@
       return;
     }
     d3.select(window).on('resize', windowResize);
-    alchemy.statusBar.update('Initializing dataset');
+    // alchemy.statusBar.update('Initializing dataset');
     alchemy.nodes = data.nodes;
     alchemy.edges = data.edges;
     activeFilters = d3.map();
@@ -966,7 +987,7 @@
         alchemy[alchemy.conf.preLoad] = true;
       }
     }
-    alchemy.statusBar.update('Initializing visualization');
+    // alchemy.statusBar.update('Initializing visualization');
     alchemy.vis = d3.select(alchemy.conf.divSelector)
         .attr("style", "width:" + (alchemy.conf.graphWidth()) +
                        "px; height:" + (alchemy.conf.graphHeight()) + "px")
@@ -986,10 +1007,10 @@
       return alchemy.conf.linkDistance(d, k);
     }).theta(1.0).gravity(alchemy.layout.gravity(k)).linkStrength(alchemy.layout.linkStrength).friction(alchemy.layout.friction()).chargeDistance(alchemy.layout.chargeDistance()).size([alchemy.conf.graphWidth(), alchemy.conf.graphHeight()]).nodes(alchemy.nodes).links(alchemy.edges).on("tick", alchemy.layout.tick);
     alchemy.updateGraph();
-    alchemy.statusBar.update('Preparing dashboard');
+    // alchemy.statusBar.update('Preparing dashboard');
     alchemy.controlDash.init();
     if (!alchemy.conf.forceLocked) {
-      alchemy.statusBar.update('Running layout calculation');
+      // alchemy.statusBar.update('Running layout calculation');
       alchemy.force.on("tick", alchemy.layout.tick).start();
     }
     if (alchemy.conf.afterLoad != null) {
@@ -1006,7 +1027,7 @@
     if (alchemy.conf.initialTranslate !== alchemy.defaults.initialTranslate) {
       alchemy.interactions.zoom().translate(alchemy.conf.initialTranslate);
     }
-    alchemy.statusBar.destroy();
+    // alchemy.statusBar.destroy();
   };
 
   alchemy.stats = {
@@ -1156,7 +1177,7 @@
     },
     show: function() {
       var legend_html;
-      legend_html = '<div id = "legend-header" data-toggle="collapse" data-target="#legend #all-legend"><h3 class="legendHeader">Legend</h3><span class = "fa fa-caret-right fa-2x"></span></div><div id="all-legend" class="collapse"><h4 class="legendHeader">Edges</h4><ul class = "list-group" id="edgeLegend"></ul><h4 class="legendHeader">Nodes</h4><ul class = "list-group" id="nodeLegend"></ul>';
+      legend_html = '<div id = "legend-header" data-toggle="collapse" data-target="#legend #all-legend"><h3 class="legendHeader">Legend</h3><span class = "fa fa-caret-right fa-2x"></span></div><div id="all-legend" class="collapse"><h4 class="legendHeader">Edges</h4><ul class = "list-group" id="edgeLegend"></ul><h4 class="legendHeader">Nodes</h4><h5 class="legendHeader">Size is calculated based on the number of peers. More peers, larger circle</h5><ul class = "list-group" id="nodeLegend"></ul>';
       d3.select('#legend').html(legend_html);
     },
     nodeLegend: function() {
@@ -1175,6 +1196,7 @@
             .attr('class', 'list-group-item nodeLegendItem');
           d3.select('#nodeLegend-item-'+nodeType)
             .append('svg')
+                .attr('class', 'nodeLegendItemSVG')
                 .style( {'width': symWidth, 'height': symHeight} )
             .append('g')
                 .attr('transform', 'translate('+ symHeight/2 + ',' + symHeight/2 + ')')
@@ -1350,7 +1372,7 @@
 
   alchemy.begin = function(userConf) {
     alchemy.conf = _.assign({}, alchemy.defaults, userConf);
-    alchemy.statusBar.init('Initializing visualization');
+    // alchemy.statusBar.init('Initializing visualization');
     if (typeof alchemy.conf.dataSource === 'string') {
       return d3.json(alchemy.conf.dataSource, alchemy.startGraph);
     } else if (typeof alchemy.conf.dataSource === 'object') {

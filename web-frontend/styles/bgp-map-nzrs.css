@@ -38,7 +38,7 @@ circle.priv {
     stroke-dasharray: 6,3;
 }
 
-.edge.undefined {
+.edge.unk {
     stroke: cyan;
     stroke-dasharray: 8,2;
 }
@@ -61,6 +61,10 @@ text.edgeLegendLabel {
     height: 30px;
 }
 
+.edgeLegendItemSVG {
+    background: transparent;
+}
+
 /* Drupal adds an icon to list elements, overwritting */
 #content-area ul li {
     background: initial;
@@ -71,12 +75,16 @@ text.edgeLegendLabel {
     height: 40px;
 }
 
-.legendHeader {
-    color: white;
-    max-width: 80px;
+.nodeLegendItemSVG {
+    background: transparent;
 }
 
-h3.legendHeader {
+.legendHeader {
+    color: white;
+    /* max-width: 80px; */
+}
+
+h3.legendHeader, h3.creditsHeader {
     padding-left: 10px;
     font-size: 110%;
     line-height: 1.5;
@@ -84,10 +92,15 @@ h3.legendHeader {
 
 h4.legendHeader {
     padding-left: 20px;
-    font-size: 90%;
+    font-size: 95%;
     line-height: 1.2;
 }
 
+h5.legendHeader {
+    padding-left: 20px;
+    font-size: 90%;
+    line-height: 1.1;
+}
 
 /* This fixes the placement of the navigation bar in Drupal */
 #navigation {
@@ -95,3 +108,4 @@ h4.legendHeader {
     top: 0px;
     left: 0px;
 }
+

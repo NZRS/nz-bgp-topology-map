@@ -75,11 +75,13 @@ data/as-info.json: data/as-list.txt nz-bgp-map/fetch-as-names.py
 	cd nz-bgp-map && /usr/bin/python fetch-as-names.py && cd ..
 
 deploy-test: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.html
-	cd /var/www && mkdir -p misc/data d3 scripts styles
+	cd /var/www && mkdir -p misc/data d3 scripts styles images
 	rsync -a data/nz-bgp-map.alchemy.json ${LOCAL_DIR}/misc/data
 	rsync -a web-frontend/alchemy.html ${LOCAL_DIR}/index.html
+	rsync -a web-frontend/credits.html ${LOCAL_DIR}/
 	rsync -a web-frontend/styles/* ${LOCAL_DIR}/styles/
 	rsync -a web-frontend/scripts/* ${LOCAL_DIR}/scripts/
+	rsync -a web-frontend/images/* ${LOCAL_DIR}/images/
 
 deploy-standalone: data/nz-bgp-map.json web-frontend/alchemy.html
 	ssh ${PROD_SERVER} 'mkdir -p ${PROD_DIR} && cd ${PROD_DIR} && mkdir -p misc/data d3 scripts styles'
