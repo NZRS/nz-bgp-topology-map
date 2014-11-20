@@ -82,6 +82,7 @@ deploy-test: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.h
 	rsync -a web-frontend/styles/* ${LOCAL_DIR}/styles/
 	rsync -a web-frontend/scripts/* ${LOCAL_DIR}/scripts/
 	rsync -a web-frontend/images/* ${LOCAL_DIR}/images/
+	rsync -a web-frontend/images/favicon.png ${LOCAL_DIR}/
 
 deploy-standalone: data/nz-bgp-map.json web-frontend/alchemy.html
 	ssh ${PROD_SERVER} 'mkdir -p ${PROD_DIR} && cd ${PROD_DIR} && mkdir -p misc/data d3 scripts styles'
