@@ -21,3 +21,4 @@ rv-bgp-tables/prefix-aspath.txt
 # Data files
 data/*
 as-rank
+*.txt

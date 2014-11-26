@@ -81,7 +81,7 @@
       d3.select("#brand")   
           .append("div")
             .attr("id", "brand-image")
-              .html("<img src=\"/images/nzrs-logo.png\"/>");
+              .html("<img height=\"80px\" src=\"/images/NZRS_Logo_white.png\"/>");
     },
     filters: function() {
       d3.select("#control-dash").append("div").attr("id", "filters");
@@ -1284,6 +1284,8 @@
     alchemy.vis.selectAll('g.node').attr('transform', function(d) {
       return "translate(" + d.x + ", " + d.y + ")";
     });
+    jQuery(".progress-label").text("Complete!");
+    jQuery("#progressbar").remove();
     return alchemy.node.exit().remove();
   };
 

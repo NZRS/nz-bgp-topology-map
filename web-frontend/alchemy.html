@@ -3,12 +3,34 @@
 <link rel="stylesheet" href="/styles/vendor.css">
 <link rel="stylesheet" href="/styles/alchemy.css">
 <link rel="stylesheet" href="/styles/bgp-map-nzrs.css">
+<style>
+    #progressbar .ui-progressbar-value {
+        background-color: #CCC;
+    }
+
+    .progress-label {
+        position: absolute;
+        left: 50%;
+        top: 4px;
+        font-weight: bold;
+    }
+</style>
 <title>NZ BGP Topology Map</title>
 </head>
   <body>
+      <div id="progressbar">
+          <div class="progress-label">Loading...</div>
+      </div>
     <div class="alchemy" id="alchemy"></div>
 
     <script src="/scripts/vendor.js"></script>
+    <link rel="stylesheet" href="/styles/jquery-ui.1.11.1.css">
+    <script src="/scripts/jquery-1.10.2.js"></script>
+    <script src="/scripts/jquery-ui.1.11.2.js"></script>
+    <script>
+        jQuery("#progressbar").progressbar({value: false});
+        jQuery("#progressbar").progressbar("option", "value", false);
+    </script>
     <script src="/scripts/alchemy.js"></script>
     <script src="/scripts/map-config.js"></script>
   </body>
