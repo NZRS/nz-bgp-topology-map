@@ -18,7 +18,7 @@ DRUPAL_SERVER = srsov-drupal1
 DRUPAL_DIR = bgp-map
 
 data/nz-bgp-map.json: nz-bgp-map/aspath2d3.py data/nzix.json \
-                        data/rv-nz-as-rels.json \
+                        data/nz-as-rels.json \
                         data/as-from-rir.tsv \
                         data/substitute-as.json \
                         data/as-info.json
@@ -41,7 +41,7 @@ as-rank/$(REL_DAY).as-rel.txt:
 	wget -O - http://data.caida.org/datasets/as-relationships/serial-1/$(REL_DAY).as-rel.txt.bz2 | bzip2 -cd > $@_
 	mv $@_ $@
 
-data/rv-nz-as-rels.json: as-relationships/get-as-relationships.py \
+data/nz-as-rels.json: as-relationships/get-as-relationships.py \
                             data/rv-nz-aspath.json \
                             data/nzix.json \
                             as-rank/$(REL_DAY).as-rel.txt \
@@ -51,8 +51,8 @@ data/rv-nz-as-rels.json: as-relationships/get-as-relationships.py \
 
 data/rv-nz-aspath.json: data/prefix-aspath.txt \
         data/as-from-rir.tsv \
-        nz-trace-destinations/find-nz-as-path.py
-	cd nz-trace-destinations && /usr/bin/python find-nz-as-path.py && cd ..
+        nz-trace-destinations/find-nz-prefixes.py
+	cd nz-trace-destinations && /usr/bin/python find-nz-prefixes.py && cd ..
 
 data/as-from-rir.tsv: nz-trace-destinations/list-nz-as.py \
         nz-trace-destinations/delegated-apnic-latest

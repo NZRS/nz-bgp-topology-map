@@ -12,20 +12,20 @@ def rel_char(src, dst):
     key = "{0}+{1}".format(src, dst)
     key_rev = "{0}+{1}".format(dst, src)
     if key in as_rel:
-        if (as_rel[key] == 0):
+        if as_rel[key] == 0:
             rv = '-'
-        elif (as_rel[key] < 0):
+        elif as_rel[key] < 0:
             rv = '>'
-        elif (as_rel[key] == 1):
+        elif as_rel[key] == 1:
             rv = '<'
         else:
             rv = '='
     elif key_rev in as_rel:
-        if (as_rel[key_rev] == 0):
+        if as_rel[key_rev] == 0:
             rv = '-'
-        elif (as_rel[key_rev] < 0):
+        elif as_rel[key_rev] < 0:
             rv = '<'
-        elif (as_rel[key_rev] == 1):
+        elif as_rel[key_rev] == 1:
             rv = '>'
         else:
             rv = '='
@@ -63,7 +63,8 @@ for aspath_file in ['data/rv-nz-aspath.json', 'data/nzix.json']:
     with open(aspath_file, 'rb') as rv_file:
         rv_paths = json.load(rv_file)
 
-    for aspath in rv_paths['aspath']:
+    for path_entry in rv_paths['aspath']:
+        aspath = path_entry['path']
         if len(aspath) > 1:
             as_links = []
             for i in range(1, len(aspath)):
@@ -73,7 +74,7 @@ for aspath_file in ['data/rv-nz-aspath.json', 'data/nzix.json']:
                 as_set.add(aspath[i])
                 if rel == '?':
                     unknowns.add("".join([aspath[i-1], rel, aspath[i]]))
-            as_paths.append(as_links)
+            as_paths.append(dict(links=as_links, prefixes=path_entry['prefixes']))
 
 with open('data/nz-as-rels.json', 'wb') as as_rel_file:
     json.dump(dict(aspaths=as_paths), as_rel_file)

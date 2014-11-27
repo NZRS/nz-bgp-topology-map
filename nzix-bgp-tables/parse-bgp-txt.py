@@ -1,29 +1,25 @@
 #!/usr/bin/env python
 
 import re
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import json
 import sys
 from IPy import IP
-
 # shamelessly stolen from
 # http://stackoverflow.com/questions/4914008/efficient-way-of-parsing-fixed-width-files-in-python
-
-try:
-    from itertools import izip_longest  # added in Py 2.6
-except ImportError:
-    from itertools import zip_longest as izip_longest  # name change in Py 3.x
+from itertools import izip_longest  # added in Py 2.6
 
 try:
     from itertools import accumulate  # added in Py 3.2
 except ImportError:
     def accumulate(iterable):
-        'Return running totals (simplified version).'
+        """Return running totals (simplified version)."""
         total = next(iterable)
         yield total
         for value in iterable:
             total += value
             yield total
+
 
 def make_parser(fieldwidths):
     cuts = tuple(cut for cut in accumulate(abs(fw) for fw in fieldwidths))
@@ -42,12 +38,13 @@ def asdot2asplain(aslist=[]):
     # format (RFC5396). Converting to asplain
     for asn in aslist:
         if re.search('\.', asn):
-            [ high_bits, low_bits ] = asn.split('.')
-            rv.append( str( (int(high_bits) << 16) + int(low_bits)))
+            [high_bits, low_bits] = asn.split('.')
+            rv.append(str((int(high_bits) << 16) + int(low_bits)))
         else:
             rv.append(asn)
 
     return rv
+
 
 def prepare_route(prefix, ix_as, aspath_str):
     # This removes the AS-Path prepending
@@ -60,18 +57,18 @@ def prepare_route(prefix, ix_as, aspath_str):
         prefix = "{0}/24".format(prefix)
 #                print "{0} -> {1} : {2}".format(prefix, router, aspath)
     for asn in aspath:
-        if path_count.has_key(asn):
+        if asn in path_count:
             path_count[asn] += 1
         else:
             path_count[asn] = 0
 
-    return dict(prefix=prefix, aspath=aspath)
+    return dict(prefix=prefix, aspath=" ".join(aspath))
 
 def relevant_as(prefix):
     try:
-        asn_score = max([ path_count[asn] for asn in prefix['aspath'] ])
+        asn_score = max([path_count[asn] for asn in prefix['aspath']])
     except ValueError:
-        print "ERROR: ASpath produced invalid score {0}".format(prefix)
+        print "ERROR: AS Path produced invalid score {0}".format(prefix)
         asn_score = 0
 
     return asn_score
@@ -80,7 +77,6 @@ def relevant_as(prefix):
 
 fieldwidths = (3, 3, 17, 17, 24, 80)
 parse = make_parser(fieldwidths)
-ixviews = []
 path_count = {}
 
 # Read the file with IX info
@@ -89,8 +85,9 @@ with open('../data/ix-info.json', 'rb') as ix_info_file:
 
     ix_name2as = {}
     for k in ix_info.keys():
-        ix_name2as[ ix_info[k]['name'] ] = k
+        ix_name2as[ix_info[k]['name']] = k
 
+aspath_set = defaultdict(list)
 for ixfile in sys.argv[1:]:
     with open(ixfile) as bgpdata:
 
@@ -106,7 +103,7 @@ for ixfile in sys.argv[1:]:
                 # The routeserver looks like rs1.ape.nzix.net, extract the
                 # meaningful label to map to the corresponding AS number
                 ix_name = rs.split('.')[1].upper()
-                ix_as   = ix_name2as[ix_name]
+                ix_as = ix_name2as[ix_name]
 
             fields = parse(line)
             if len(fields[1]) > 0 and fields[1][0] == '*':
@@ -123,21 +120,21 @@ for ixfile in sys.argv[1:]:
                     prev_prefix = None
 
                     route = prepare_route(prefix, ix_as, fields[5])
-                    prefixes.append( route )
+                    prefixes.append(route)
             else:
                 try:
                     # The field 3 is an IP address
                     IP(fields[3])
 #                    print "Mark -> {0} learnt from {1}".format(prev_prefix, fields[3])
                     route = prepare_route(prev_prefix, ix_as, fields[5])
-                    prefixes.append( route )
+                    prefixes.append(route)
                 except ValueError:
                     # Not interested on this line
                     pass
 
         for p in prefixes:
-            ixviews.append( p['aspath'] )
+            aspath_set[p['aspath']].append(p['prefix'])
 
 with open('../data/nzix.json', 'wb') as ixfile:
-    json.dump(dict(aspath=ixviews), ixfile)
+    json.dump(dict(aspath=[dict(prefixes=prefixes, path=path.split(' ')) for path, prefixes in aspath_set.iteritems()]), ixfile)
 

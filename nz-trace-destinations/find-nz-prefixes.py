@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import csv
-from collections import OrderedDict, Counter
+from collections import OrderedDict, defaultdict
 import json
 import ipaddress
 
@@ -14,13 +14,11 @@ def is_nz_network(p):
         net_p = ipaddress.ip_network(p)
         num_slash_24 = int(net_p.num_addresses/256)
         for prefix in nz_registered_prefix_list:
-            print "** Testing {} against {}".format(p, prefix)
             overlaps = prefix.overlaps(net_p)
             if overlaps:
                 break
     except ValueError:
         print "ERR: prefix caused exception", p
-        return False
 
     return dict(is_nz=overlaps, count24=num_slash_24)
 
@@ -49,9 +47,9 @@ with open('../data/as-from-rir.tsv', 'rb') as nz_as:
         nz_as_list[asn[0]] = True
 
 
-aspath_set = Counter()
+aspath_set = defaultdict(list)
 prefix_list = dict()
-with open('../data/prefix-aspath.txt', 'rb') as aspath_file:
+with open('../data/prefix-aspath-2.txt', 'rb') as aspath_file:
     aspath_list = csv.reader(aspath_file, delimiter='|')
 
     for aspath in aspath_list:
@@ -59,23 +57,23 @@ with open('../data/prefix-aspath.txt', 'rb') as aspath_file:
         # Test if the origin AS is from NZ
         origin = aspath[1].split(' ')[-1]
         if is_nz_as(origin):
-            aspath_set[aspath[1]] += 2^(int(aspath[0].split('/')[-1]) - 24)
+            netmask = int(aspath[0].split('/')[-1])
+            if netmask <= 24:
+                aspath_set[aspath[1]].append(aspath[0])
+            else:
+                print "ERROR: Skipping prefix {} with mask smaller to 24".format(aspath[0])
         else:   # If not, test if the prefix corresponds to NZ
             status = prefix_list.get(aspath[0], None)
             if status == None:  # The entry doesnt exist
-                if verbose:
-                    print "Adding entry", aspath[0]
                 prefix_list[aspath[0]] = is_nz_network(aspath[0])
             elif status['is_nz']:  # The entry exists and it's from NZ
-                if verbose:
-                    print "Using entry", aspath[0]
-                aspath_set[aspath[1]] += status['count24']
+                aspath_set[aspath[1]].append(aspath[0])
 
 nz_aspath = []
-for aspath, count in aspath_set.iteritems():
-    nz_aspath.append(dict(path=list(OrderedDict.fromkeys(aspath.split(' '))), count=count))
+for aspath, prefixes in aspath_set.iteritems():
+    nz_aspath.append(dict(path=list(OrderedDict.fromkeys(aspath.split(' '))), prefixes=prefixes))
 
-with open('../data/rv-nz-aspath-from-prefix.json', 'wb') as nz_aspath_file:
+with open('../data/rv-nz-aspath.json', 'wb') as nz_aspath_file:
     json.dump(dict(aspath=nz_aspath), nz_aspath_file)
 
 
