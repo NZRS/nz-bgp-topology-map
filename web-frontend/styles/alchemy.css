@@ -265,7 +265,7 @@ g.node > text {
 #stats {
   padding: 0.5em 1em;
   background-color: transparent;
-  border-bottom: thin dashed #e89619;
+  /* border-bottom: thin dashed #e89619; */
 }
 
 #stats #stats-header {
@@ -319,7 +319,7 @@ g.node > text {
 #update-elements {
   padding: 0.5em 1em;
   background-color: transparent;
-  border-bottom: thin dashed #e89619;
+  /* border-bottom: thin dashed #e89619; */
 }
 
 #update-elements h3 {
@@ -432,7 +432,7 @@ g.node > text {
 #filters {
   padding: 0.5em 1em;
   background-color: transparent;
-  border-bottom: thin dashed #e89619;
+  /* border-bottom: thin dashed #e89619; */
 }
 
 #filters form {

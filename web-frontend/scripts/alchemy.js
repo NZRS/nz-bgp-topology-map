@@ -50,6 +50,9 @@
         // alchemy.controlDash.stats();
         alchemy.controlDash.legend();
         alchemy.controlDash.credits();
+        d3.select("#control-dash").append("div")
+          .attr("id", "last_updated")
+          .attr("class", "col-md-12 bottom-text");
         return alchemy.controlDash.modifyElements();
       }
     },
@@ -1284,7 +1287,7 @@
     alchemy.vis.selectAll('g.node').attr('transform', function(d) {
       return "translate(" + d.x + ", " + d.y + ")";
     });
-    jQuery(".progress-label").text("Complete!");
+
     jQuery("#progressbar").remove();
     return alchemy.node.exit().remove();
   };

@@ -5,6 +5,7 @@ import networkx as nx
 from networkx.readwrite import json_graph
 import sys
 from IPy import IP, IPSet
+from time import gmtime, strftime, localtime
 
 def substitute_as(asn):
     if as_sub_list.has_key(asn):
@@ -158,6 +159,7 @@ for link in graph_json_dump['links']:
 graph_json_dump['edges'] = graph_json_dump['links']
 graph_json_dump['dr'] = degree_range
 graph_json_dump['wr'] = [min(weights), max(weights)]
+graph_json_dump['lastupdate'] = strftime("%B %d, %Y", localtime())
 del graph_json_dump['links']
 
 json.dump(json_dump, open('../data/nz-bgp-map.json', 'w'))

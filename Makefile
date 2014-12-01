@@ -11,8 +11,8 @@ RV_MRT_FILES := $(wildcard rv-bgp-tables/*/rib.*.bz2)
 # This is the day of the AS relationship data we are going to use
 REL_DAY=20141001
 
-PROD_SERVER ?= turista
-PROD_DIR ?= /var/www/html
+PROD_SERVER ?= bgp-map
+PROD_DIR ?= /usr/share/nginx/bgp-map
 LOCAL_DIR ?= /var/www
 DRUPAL_SERVER = srsov-drupal1
 DRUPAL_DIR = bgp-map
@@ -83,6 +83,16 @@ deploy-test: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.h
 	rsync -a web-frontend/scripts/* ${LOCAL_DIR}/scripts/
 	rsync -a web-frontend/images/* ${LOCAL_DIR}/images/
 	rsync -a web-frontend/images/favicon.png ${LOCAL_DIR}/
+
+deploy-prod: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.html
+	ssh ${PROD_SERVER} 'mkdir -p ${PROD_DIR} && cd ${PROD_DIR} && mkdir -p misc/data d3 scripts styles images'
+	rsync -a data/nz-bgp-map.alchemy.json ${PROD_SERVER}:${PROD_DIR}/misc/data
+	rsync -a web-frontend/alchemy.html ${PROD_SERVER}:${PROD_DIR}/index.html
+	rsync -a web-frontend/credits.html ${PROD_SERVER}:${PROD_DIR}/
+	rsync -a web-frontend/styles/* ${PROD_SERVER}:${PROD_DIR}/styles/
+	rsync -a web-frontend/scripts/* ${PROD_SERVER}:${PROD_DIR}/scripts/
+	rsync -a web-frontend/images/* ${PROD_SERVER}:${PROD_DIR}/images/
+	rsync -a web-frontend/images/favicon.png ${PROD_SERVER}:${PROD_DIR}/
 
 deploy-standalone: data/nz-bgp-map.json web-frontend/alchemy.html
 	ssh ${PROD_SERVER} 'mkdir -p ${PROD_DIR} && cd ${PROD_DIR} && mkdir -p misc/data d3 scripts styles'

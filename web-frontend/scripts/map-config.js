@@ -59,6 +59,15 @@ var config = {
         // There is also information about the range of weights in the edges
         edge_width.domain(this.preLoad.caller.arguments[0].wr);
     },
+    afterLoad: function() {
+        jQuery(".progress-label").text("Complete!");
+        d3.select("#last_updated").append("h3")
+            .attr("class", "legendHeader")
+            .html("Data prepared on");
+        d3.select("#last_updated").append("h4")
+            .attr("class", "legendHeader")
+            .html(this.afterLoad.caller.arguments[0].lastupdate);
+    },
     zoomControls: true,
 //    graphHeight: function() { return 500; },
     initialScale: 0.4,

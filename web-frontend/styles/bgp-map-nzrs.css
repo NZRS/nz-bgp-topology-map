@@ -102,6 +102,10 @@ h5.legendHeader {
     line-height: 1.1;
 }
 
+.bottom-text {
+    position: absolute;
+    bottom: 0px;
+}
 /* This fixes the placement of the navigation bar in Drupal */
 #navigation {
     position: absolute;
