@@ -157,7 +157,6 @@ g.node > text {
 }
 
 .edge {
-  stroke-width: 2;
   stroke-opacity: 0.2;
   stroke: white; /* This get overridden by subclasses */
 }
@@ -170,12 +169,10 @@ g.node > text {
 .edge.active.selected {
   cursor: pointer;
   stroke-opacity: 1;
-  stroke-width: 3;
 }
 
 .edge.active.highlight {
   opacity: .8 !important;
-  stroke-width: 2 !important;
   stroke-opacity: .7 !important;
 }
 
@@ -185,7 +182,6 @@ g.node > text {
 
 .edge.inactive.highlight {
   opacity: .8 !important;
-  stroke-width: 2 !important;
   stroke-opacity: .5 !important;
 }
 

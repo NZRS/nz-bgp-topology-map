@@ -49,11 +49,18 @@ with open('../data/as-from-rir.tsv', 'rb') as nz_as:
 
 aspath_set = defaultdict(list)
 prefix_list = dict()
-with open('../data/prefix-aspath-2.txt', 'rb') as aspath_file:
+line_cnt = 0
+with open('../data/prefix-aspath.txt', 'rb') as aspath_file:
     aspath_list = csv.reader(aspath_file, delimiter='|')
 
     for aspath in aspath_list:
 
+        # Special case to filter out some prefixes we don't want to see.
+        if aspath[0] == "0.0.0.0/0":
+            print "ERROR: Skipping default route"
+            continue
+        if line_cnt % 100000 == 0:
+            print "{} paths processed".format(line_cnt)
         # Test if the origin AS is from NZ
         origin = aspath[1].split(' ')[-1]
         if is_nz_as(origin):
@@ -68,6 +75,7 @@ with open('../data/prefix-aspath-2.txt', 'rb') as aspath_file:
                 prefix_list[aspath[0]] = is_nz_network(aspath[0])
             elif status['is_nz']:  # The entry exists and it's from NZ
                 aspath_set[aspath[1]].append(aspath[0])
+        line_cnt += 1
 
 nz_aspath = []
 for aspath, prefixes in aspath_set.iteritems():

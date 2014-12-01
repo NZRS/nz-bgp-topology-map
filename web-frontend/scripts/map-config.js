@@ -8,6 +8,10 @@ var border = d3.scale.linear()
         .domain(deg_domain)
         .range([2, 8]);
 
+var edge_width = d3.scale.sqrt()
+        .domain([1, 23000])
+        .range([1, 20]);
+
 var node_color = {
     'other': d3.scale.linear()
                 .domain(deg_domain)
@@ -37,6 +41,7 @@ var config = {
         'p2p': 'Peer to Peer',
         's2s': 'Sibling to Sibling',
         'unk': 'Unknown' },
+    edgeStrike: function(e) { return edge_width(e._weight); },
     cluster: false,
     nodeCaption: function(n) { return n.name + "<br/>(" + n.id + ")"; },
     nodeRadius: function(n) { return radius(n.degree); },
@@ -51,6 +56,8 @@ var config = {
                 node_color[d.country].domain([d.min, d.max])
             }
         });
+        // There is also information about the range of weights in the edges
+        edge_width.domain(this.preLoad.caller.arguments[0].wr);
     },
     zoomControls: true,
 //    graphHeight: function() { return 500; },

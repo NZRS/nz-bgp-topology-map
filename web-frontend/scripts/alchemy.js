@@ -120,17 +120,17 @@
         } else if (d.source.cluster !== d.target.cluster) {
           id = "" + d.source.cluster + "-" + d.target.cluster;
           gid = "cluster-gradient-" + id;
-          return "stroke: url(#" + gid + ")";
+          return "stroke: url(#" + gid + "; " + stroke_width + ")";
         }
-        return "stroke: " + (alchemy.styles.getClusterColour(index));
+        return "stroke: " + (alchemy.styles.getClusterColour(index)) + "; stroke-width: " + alchemy.utils.edgeStrike(d);
       };
     } else if (alchemy.conf.edgeColour && !alchemy.conf.cluster) {
       edgeStyle = function(d) {
-        return "stroke: " + alchemy.conf.edgeColour;
+        return "stroke: " + alchemy.conf.edgeColour + "; stroke-width: " + alchemy.utils.edgeStrike(d);
       };
     } else {
       edgeStyle = function(d) {
-        return "";
+        return "stroke-width: " + alchemy.utils.edgeStrike(d);
       };
     }
     edge.enter().insert("line", 'g.node').attr("class", function(d) {
@@ -1177,7 +1177,7 @@
     },
     show: function() {
       var legend_html;
-      legend_html = '<div id = "legend-header" data-toggle="collapse" data-target="#legend #all-legend"><h3 class="legendHeader">Legend</h3><span class = "fa fa-caret-right fa-2x"></span></div><div id="all-legend" class="collapse"><h4 class="legendHeader">Edges</h4><ul class = "list-group" id="edgeLegend"></ul><h4 class="legendHeader">Nodes</h4><h5 class="legendHeader">Size is calculated based on the number of peers. More peers, larger circle</h5><ul class = "list-group" id="nodeLegend"></ul>';
+      legend_html = '<div id = "legend-header" data-toggle="collapse" data-target="#legend #all-legend"><h3 class="legendHeader">Legend</h3><span class = "fa fa-caret-right fa-2x"></span></div><div id="all-legend" class="collapse"><h4 class="legendHeader">Edges</h4><h5 class="legendHeader">Edge thickness is calculated as the Square Root of the number of /24 exchanged between peers (both ways)</h5><ul class = "list-group" id="edgeLegend"></ul><h4 class="legendHeader">Nodes</h4><h5 class="legendHeader">Size is calculated based on the number of peers. More peers, larger circle</h5><ul class = "list-group" id="nodeLegend"></ul>';
       d3.select('#legend').html(legend_html);
     },
     nodeLegend: function() {
@@ -1233,7 +1233,7 @@
                 .style( {'height': '100%'} )
             .append('line')
             .attr('class', 'edge '+edgeType)
-            .attr('style', 'stroke-opacity:1.0;stroke-width:4')
+            .attr('style', 'stroke-opacity:1.0;stroke-width:3')
             .attr('x1', 0)
             .attr('y1', legendHeight/2)
             .attr('x2', lineWidth)
@@ -1343,6 +1343,7 @@
     edgeCaption: 'caption',
     edgeColour: null,
     edgeTypes: null,
+    edgeStrike: 2,
     preLoad: 'preLoad',
     afterLoad: 'afterLoad',
     divSelector: '#alchemy',
@@ -1515,6 +1516,17 @@
         }
       } else {
         return 3;
+      }
+    },
+    edgeStrike: function(e) {
+      if (alchemy.conf.edgeStrike != null) {
+        if (typeof alchemy.conf.edgeStrike === 'function') {
+          return alchemy.conf.edgeStrike(e);
+        } else if (typeof alchemy.conf.edgeStrike === 'number') {
+          return alchemy.conf.edgeStrike;
+        }
+      } else {
+        return 2;
       }
     }
   };

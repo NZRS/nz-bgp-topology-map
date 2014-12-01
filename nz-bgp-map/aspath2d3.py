@@ -50,16 +50,26 @@ for aspath in rv_paths['aspaths']:
         _class = edge_rel2class(rel)
         _src = substitute_as(src)
         _dst = substitute_as(dst)
-        G.add_edge(_src, _dst, _class=_class, p=[])
+        G.add_edge(_src, _dst, _class=_class)
+        if 'p' not in G[_src][_dst]:
+            G[_src][_dst]['p'] = []
         for p in aspath['prefixes']:
             G[_src][_dst]['p'].append(p)
 
 # For each edge in the graph, calculate a weight based on the number of /24 prefixes being passed
+weights = []
 for s, d in G.edges_iter():
     # Calculate the aggregated list of networks observed
     ipset = IPSet([IP(p) for p in G[s][d]['p']])
-    G[s][d]['w'] = calculate_ipset_weight(ipset)
+    w = calculate_ipset_weight(ipset)
+    G[s][d]['_weight'] = w
+    weights.append(w)
+    # Wont need the list of prefixes anymore
+    del G[s][d]['p']
     G[s][d]['ipset'] = [ip.strNormal() for ip in ipset]
+
+# Report back about the range of weights
+print "Weight Range: Min = {}, Max = {}".format(min(weights), max(weights))
 
 # Overwrite the information about the ASes representing IXes with
 # prepared data
@@ -147,6 +157,7 @@ for link in graph_json_dump['links']:
 
 graph_json_dump['edges'] = graph_json_dump['links']
 graph_json_dump['dr'] = degree_range
+graph_json_dump['wr'] = [min(weights), max(weights)]
 del graph_json_dump['links']
 
 json.dump(json_dump, open('../data/nz-bgp-map.json', 'w'))
