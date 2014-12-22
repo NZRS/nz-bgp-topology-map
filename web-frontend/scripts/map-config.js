@@ -43,7 +43,7 @@ var config = {
         'unk': 'Unknown' },
     edgeStrike: function(e) { return edge_width(e._weight); },
     cluster: false,
-    nodeCaption: function(n) { return n.name + "<br/>(" + n.id + ")"; },
+    nodeCaption: function(n, i) { if (i == 0) { return n.name; } else { return "(" + n.id + ")"; }},
     nodeRadius: function(n) { return radius(n.degree); },
     nodeStrike: function(n) { return border(n.degree); },
     nodeColour: function(n) { return node_color[n.country](n.degree); },

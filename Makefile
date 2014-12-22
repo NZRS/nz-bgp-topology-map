@@ -72,7 +72,7 @@ clean-nzix:
 	rm -f nzix-bgp-tables/*.txt
 
 data/as-info.json: data/as-list.txt nz-bgp-map/fetch-as-names.py
-	cd nz-bgp-map && /usr/bin/python fetch-as-names.py && cd ..
+	cd nz-bgp-map && /usr/bin/python fetch-as-names.py --input ../data/as-list.txt --output ../data/as-info.json && cd ..
 
 deploy-test: data/nz-bgp-map.json web-frontend/force.html web-frontend/alchemy.html
 	cd /var/www && mkdir -p misc/data d3 scripts styles images

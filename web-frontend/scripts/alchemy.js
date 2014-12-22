@@ -244,9 +244,7 @@
   };
 
   alchemy.drawing.labelnodes = function(nodelist) {
-    var useless_var = 10;
-    useless_var += 1;
-    nodelist.append('svg:text')
+    var nodelabels = nodelist.append('svg:text')
         .attr('id', function(d) {
           return "text-" + d.id; })
         .attr('dy', function(d) {
@@ -255,9 +253,20 @@
           } else {
             return alchemy.utils.nodeSize(d) * 1.1 + 7;
           }
-        })
-        .html(function(d) {
-            return alchemy.utils.nodeText(d);
+        });
+
+    nodelabels
+        .append('svg:tspan')
+        .text(function(d) {
+          return alchemy.utils.nodeText(d, 0);
+        });
+
+    nodelabels
+        .append('svg:tspan')
+        .attr('dy', 12)
+        .attr('x', 0)
+        .text(function(d) {
+          return alchemy.utils.nodeText(d, 1);
         });
   };
 
@@ -1213,7 +1222,7 @@
             .attr('class', 'nodeLegendLabel')
             .attr('transform', 'translate('+ (symHeight) + ',10)')
             .attr('style', 'text-anchor: start;')
-            .html(alchemy.conf.nodeLabels[nodeType]);
+            .text(alchemy.conf.nodeLabels[nodeType]);
         }
       }
     },
@@ -1247,7 +1256,7 @@
             .attr('class', 'edgeLegendLabel')
             .attr('transform', 'translate('+ (lineWidth + 5) + ',20)')
             .attr('style', 'text-anchor: start;')
-            .html(alchemy.conf.edgeLabels[edgeType]);
+            .text(alchemy.conf.edgeLabels[edgeType]);
         }
       }
     },
@@ -1468,7 +1477,7 @@
       alchemy.vis.transition().attr('transform', "translate(" + x + ", " + y + ") scale(" + level + ")");
       return zoom.translate([x, y]).scale(level);
     },
-    nodeText: function(d) {
+    nodeText: function(d, i) {
       var caption;
       if (alchemy.conf.nodeCaption && typeof alchemy.conf.nodeCaption === 'string') {
         if (d[alchemy.conf.nodeCaption] != null) {
@@ -1477,7 +1486,7 @@
           return '';
         }
       } else if (alchemy.conf.nodeCaption && typeof alchemy.conf.nodeCaption === 'function') {
-        caption = alchemy.conf.nodeCaption(d);
+        caption = alchemy.conf.nodeCaption(d, i);
         if (caption === void 0 || String(caption) === 'undefined') {
           alchemy.log["caption"] = "At least one caption returned undefined";
           alchemy.conf.caption = false;
