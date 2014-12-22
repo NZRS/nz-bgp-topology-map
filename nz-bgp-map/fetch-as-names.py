@@ -4,11 +4,11 @@ import sys
 from twisted.names import client, error
 from twisted.internet import reactor
 from twisted.internet import defer, task
-from twisted.python import usage
 import json
+import argparse
+
 
 def send_dns_query( ( domain, resolver, asn )):
-#    print "Querying for {0}".format(domain)
     d = resolver.lookupText(domain)
     d.addCallback(receive_dns_response, domain, asn)
     d.addErrback(printError, domain, asn)
@@ -23,8 +23,7 @@ def do_parallel_dns(name_list, count, callable, *args, **named):
 
 def receive_dns_response(records, domainname, asn):
     """
-    Print the SRV records for the domainname or an error message if no
-    SRV records were found.
+    Receives TXT records and parses them
     """
     answers, authority, additional = records
     if answers:
@@ -57,11 +56,15 @@ def printError(failure, domainname, asn):
 if __name__ == '__main__':
     NUM_WORKERS = 8
     as_info = {}
-    as_info_file = '../data/as-info.json'
+
+    parser = argparse.ArgumentParser("Fetches AS details for a list of ASN")
+    parser.add_argument('--input', required=True, help="Input file with ASNs")
+    parser.add_argument('--output', required=True, help="JSON file to save ASN info")
+    args = parser.parse_args()
 
     domains = []
     resolver = client.Resolver('/etc/resolv.conf')
-    with open('../data/as-list.txt', 'rb') as name_file:
+    with open(args.input, 'rb') as name_file:
         for line in name_file:
             asn = line.rstrip()
             if int(asn) in range(64512, 65534):
@@ -79,5 +82,5 @@ if __name__ == '__main__':
     reactor.run()
 
     # Save the information we may have obtained
-    with open(as_info_file, 'wb') as as_info_output:
+    with open(args.output, 'wb') as as_info_output:
         json.dump(as_info, as_info_output)
