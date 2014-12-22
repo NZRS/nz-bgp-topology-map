@@ -50,6 +50,7 @@ with open('../data/as-from-rir.tsv', 'rb') as nz_as:
 aspath_set = defaultdict(list)
 prefix_list = dict()
 line_cnt = 0
+
 with open('../data/prefix-aspath.txt', 'rb') as aspath_file:
     aspath_list = csv.reader(aspath_file, delimiter='|')
 
