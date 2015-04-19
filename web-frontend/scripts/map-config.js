@@ -67,6 +67,9 @@ var config = {
         d3.select("#last_updated").append("h4")
             .attr("class", "legendHeader")
             .html(this.afterLoad.caller.arguments[0].lastupdate);
+        document.title = "NZ BGP Topology Map"
+        d3.select("#brand-title").append("span")
+            .html("NZ BGP Topology Map");
     },
     zoomControls: true,
 //    graphHeight: function() { return 500; },
