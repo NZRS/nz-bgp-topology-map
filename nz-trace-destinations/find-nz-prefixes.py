@@ -24,7 +24,7 @@ def is_nz_network(p):
 
 
 def is_nz_as(asn):
-    return nz_as_list.get(asn, False)
+    return asn in nz_as_list
 
 """ Read the list of NZ prefixes from the data obtained from APNIC"""
 nz_registered_prefix_list = []
@@ -38,13 +38,13 @@ with open("../data/nz-networks-from-rir.tsv", "rb") as rir_data:
 print "{} NZ prefixes found".format(len(nz_registered_prefix_list))
 
 """ Read the list of NZ ASes from the data obtained from APNIC"""
-nz_as_list = dict()
+nz_as_list = set()
 
 with open('../data/as-from-rir.tsv', 'rb') as nz_as:
     as_in = csv.reader(nz_as, delimiter='\t')
 
     for asn in as_in:
-        nz_as_list[asn[0]] = True
+        nz_as_list.add(asn[0])
 
 
 aspath_set = defaultdict(list)
