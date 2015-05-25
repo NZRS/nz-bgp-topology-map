@@ -13,11 +13,11 @@ REL_DAY=20141001
 
 PROD_SERVER ?= bgp-map
 PROD_DIR ?= /usr/share/nginx/bgp-map
-LOCAL_DIR ?= /var/www
+LOCAL_DIR ?= /var/www/visjs
 DRUPAL_SERVER = srsov-drupal1
 DRUPAL_DIR = bgp-map
 
-data/nz-bgp-map.json: nz-bgp-map/aspath2d3.py data/nzix.json \
+data/nz-bgp-map.json data/nz-bgp-map.alchemy.json data/nz-bgp-map.vis.json: nz-bgp-map/aspath2d3.py data/nzix.json \
                         data/nz-as-rels.json \
                         data/as-from-rir.tsv \
                         data/substitute-as.json \
@@ -74,15 +74,18 @@ clean-nzix:
 data/as-info.json: data/as-list.txt nz-bgp-map/fetch-as-names.py
 	cd nz-bgp-map && /usr/bin/python fetch-as-names.py --input ../data/as-list.txt --output ../data/as-info.json && cd ..
 
-deploy-test: data/nz-bgp-map.alchemy.json web-frontend/alchemy.html
-	cd ${LOCAL_DIR} && mkdir -p misc/data d3 scripts styles images
-	rsync -a data/nz-bgp-map.alchemy.json ${LOCAL_DIR}/misc/data
-	rsync -a web-frontend/alchemy.html ${LOCAL_DIR}/index.html
+deploy-test: data/nz-bgp-map.vis.json web-frontend/vis.html
+	cd ${LOCAL_DIR} && mkdir -p misc/data scripts styles images
+	rsync -a data/nz-bgp-map.vis.json ${LOCAL_DIR}/misc/data
+	rsync -a web-frontend/vis.html ${LOCAL_DIR}/index.html
 	rsync -a web-frontend/credits.html ${LOCAL_DIR}/
 	rsync -a web-frontend/styles/* ${LOCAL_DIR}/styles/
 	rsync -a web-frontend/scripts/* ${LOCAL_DIR}/scripts/
 	rsync -a web-frontend/images/* ${LOCAL_DIR}/images/
-	rsync -a web-frontend/images/favicon.png ${LOCAL_DIR}/
+	rsync -a bower_components/vis/dist/vis.min.js ${LOCAL_DIR}/scripts/
+	rsync -a bower_components/vis/dist/vis.map ${LOCAL_DIR}/scripts/
+	rsync -a bower_components/vis/dist/vis.min.css ${LOCAL_DIR}/styles/
+	rsync -a bower_components/vis/dist/img ${LOCAL_DIR}/styles/
 
 deploy-prod: data/nz-bgp-map.json web-frontend/alchemy.html
 	ssh ${PROD_SERVER} 'mkdir -p ${PROD_DIR} && cd ${PROD_DIR} && mkdir -p misc/data d3 scripts styles images'

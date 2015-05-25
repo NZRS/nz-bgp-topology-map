@@ -4,12 +4,13 @@
     <meta name="keywords" content="New Zealand,BGP,Topology,RouteViews,Internet Exchange,NZRS"/>
 <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
 <link rel="stylesheet" href="/styles/vis.min.css">
-<title>NZ BGP Topology Map</title>
+<title>New BGP Map</title>
 </head>
   <body>
     <div id="bgpvis"></div>
 
     <script src="/scripts/vis.min.js"></script>
+    <script src="/scripts/jquery-1.10.2.js"></script>
   <script type="text/javascript">
   // create an array with nodes
   var nodes = [
@@ -28,38 +29,100 @@
     {from: 2, to: 5}
   ];
 
-  // create a network
-  var container = document.getElementById('bgpvis');
-  var data= {
-    nodes: nodes,
-    edges: edges,
-  };
-  var options = {
-    width: '1200px',
-    height: '800px',
-    nodes: {
-      shape: 'dot'
-    },
-    edges: {
-      color: 'black'
-    },
-    navigation: true,
-    groups: {
-      alpha: {
-        color: {
-          background: 'yellow',
-          border: 'white'
+  function onDataReceived(dataset) {
+      // create a network
+      var container = document.getElementById('bgpvis');
+      var data= {
+        nodes: dataset['nodes'],
+        edges: dataset['edges'],
+      };
+      var options = {
+        width: '1200px',
+        height: '800px',
+        stabilize: true,
+        hover: true,
+        configurePhysics:true,
+        nodes: {
+          shape: 'dot',
+          fontColor: 'black',
+          scaleFontWithValue: true,
+          fontDrawThreshold: 10,
+          fontSizeMin: 10,
+          fontSizeMax: 20,
+        },
+        edges: {
+          color: {
+            color: '#D9D9D9',
+            highlight: '#828282'
+          },
+          opacity: 0.3,
+          scaling: {
+            min: 5,
+            max: 25
+          }
+        },
+        physics: {
+          barnesHut: {
+            gravitationalConstant: -4000,
+            centralGravity: 0.35,
+            springLength: 250,
+            springConstant: 0.035
+          }
+        },
+        smoothCurves: false,
+        navigation: true,
+        tooltip: {
+          delay: 200,
+          fontColor: "orange",
+          fontSize: 14,
+          fontFace: "arial",
+          color: {
+            border: "#666"
+          }
+        },
+        groups: {
+          AU: {
+            color: {
+              background: 'yellow',
+              border: 'white'
+            }
+          },
+          NZ: {
+            color: {
+              background: 'black',
+              border: 'grey'
+            }
+          },
+          priv: {
+            color: {
+              background: 'blue',
+              border: 'lightblue'
+            }
+          },
+          other: {
+            color: {
+              background: 'darkgreen',
+              border: 'limegreen'
+            }
+          },
+          IX: {
+            color: {
+              background: 'red',
+              border: 'pink'
+            }
+          }
         }
-      },
-      beta: {
-        color: {
-          background: 'green',
-          border: 'limegreen'
-        }
-      }
-    }
-  };
-  var network = new vis.Network(container, data, options);
+      };
+      var network = new vis.Network(container, data, options);
+  }
+
+  $.ajax({
+        url: "/misc/data/nz-bgp-map.vis.json",
+        method: 'GET',
+        dataType: 'json',
+        success: onDataReceived,
+        error: function(_xhr, msg, _error) { alert(msg); }
+    });
 </script>
 
   </body>

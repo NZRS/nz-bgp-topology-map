@@ -164,3 +164,13 @@ del graph_json_dump['links']
 
 json.dump(json_dump, open('../data/nz-bgp-map.json', 'w'))
 json.dump(graph_json_dump, open('../data/nz-bgp-map.alchemy.json', 'w'))
+
+# Preparing for vis.js format
+vis = dict()
+vis['nodes'] = [dict(id=n['id'], label=n['name'], value=n['degree'], group=n['country']) for n in graph_json_dump['nodes']]
+vis['edges'] = []
+for e in graph_json_dump['edges']:
+    new_edge = dict(to=e['target'], group=e['_class'], value=e['_weight'])
+    new_edge['from'] = e['source']
+    vis['edges'].append(new_edge)
+json.dump(vis, open('../data/nz-bgp-map.vis.json', 'w'))
