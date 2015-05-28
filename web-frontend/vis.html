@@ -37,11 +37,20 @@
         edges: dataset['edges'],
       };
       var options = {
-        width: '1200px',
-        height: '800px',
-        stabilize: true,
-        hover: true,
-        configurePhysics:true,
+        autoResize: true,
+        width: '100%',
+        height: '100%',
+        configurePhysics: true,
+        interaction: {
+            dragNodes: false,
+            hover: true,
+            hoverSelectedEdges: true,
+            navigationButtons: true,
+            zoomView: true,
+            selectConnectedEdges: false,
+            selectable: false,
+            tooltipDelay: 150
+        },
         nodes: {
           shape: 'dot',
           fontColor: 'black',
@@ -49,35 +58,32 @@
           fontDrawThreshold: 10,
           fontSizeMin: 10,
           fontSizeMax: 20,
+          scaling: {
+            min: 5,
+            max: 60
+          }
         },
         edges: {
           color: {
             color: '#D9D9D9',
-            highlight: '#828282'
+            highlight: '#828282',
+            opacity: 0.3
           },
-          opacity: 0.3,
-          scaling: {
-            min: 5,
-            max: 25
-          }
+          smooth: false
         },
         physics: {
           barnesHut: {
             gravitationalConstant: -4000,
             centralGravity: 0.35,
             springLength: 250,
-            springConstant: 0.035
-          }
-        },
-        smoothCurves: false,
-        navigation: true,
-        tooltip: {
-          delay: 200,
-          fontColor: "orange",
-          fontSize: 14,
-          fontFace: "arial",
-          color: {
-            border: "#666"
+            springConstant: 0.035,
+            damping: 0.10,
+            avoidOverlap: 0.3
+          },
+          stabilization: {
+            enabled: true,
+            iterations: 500,
+            updateInterval: 50
           }
         },
         groups: {

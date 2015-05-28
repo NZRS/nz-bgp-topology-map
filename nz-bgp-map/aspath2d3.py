@@ -6,6 +6,7 @@ from networkx.readwrite import json_graph
 import sys
 from IPy import IP, IPSet
 from time import gmtime, strftime, localtime
+from scales import Scale
 
 def substitute_as(asn):
     if as_sub_list.has_key(asn):
@@ -19,10 +20,19 @@ rel2class = {'-': 'p2p',
              '=': 's2s',
              '?': 'unk'}
 
+_class2color = {
+    'p2p': 'orange',
+    'p2c': 'lightgreen',
+    'c2p': 'lightgreen',
+    's2s': 'red',
+    'unk': 'cyan'
+}
 
 def edge_rel2class(rel):
     return rel2class.get(rel, 'noinfo')
 
+def class2color(edge_class):
+    return _class2color.get(edge_class, 'gray')
 
 def calculate_ipset_weight(s):
     w = 0
@@ -31,6 +41,8 @@ def calculate_ipset_weight(s):
 
     return w
 
+def gen_title(n):
+    return u"<p><b>{0}<br/></b>ASN {1}</br>{2} peer(s)</p>".format(n['name'], n['id'], n['degree'])
 
 # Preload the list of substitute ASNs
 with open('../data/substitute-as.json', 'rb') as sub_as_file:
@@ -167,10 +179,12 @@ json.dump(graph_json_dump, open('../data/nz-bgp-map.alchemy.json', 'w'))
 
 # Preparing for vis.js format
 vis = dict()
-vis['nodes'] = [dict(id=n['id'], label=n['name'], value=n['degree'], group=n['country']) for n in graph_json_dump['nodes']]
+vis['nodes'] = [dict(id=n['id'], title=gen_title(n), value=n['degree'], group=n['country'])
+                for n in graph_json_dump['nodes']]
 vis['edges'] = []
+edge_scale = Scale([1, 23000], [1, 20], 0.5)
 for e in graph_json_dump['edges']:
-    new_edge = dict(to=e['target'], group=e['_class'], value=e['_weight'])
+    new_edge = dict(to=e['target'], color=class2color(e['_class']), width=edge_scale.get_value(e['_weight']))
     new_edge['from'] = e['source']
     vis['edges'].append(new_edge)
 json.dump(vis, open('../data/nz-bgp-map.vis.json', 'w'))
