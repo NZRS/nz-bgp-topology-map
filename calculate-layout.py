@@ -1,35 +1,28 @@
 __author__ = 'secastro'
 
-import networkx as nx
-from networkx.readwrite import json_graph
 import json
 import random
 import math
-from forceatlas import forceatlas2_layout
+from igraph import *
 
 node_colors = ['black', 'red', 'orange', 'green', 'grey', 'blue']
 
-# G = nx.path_graph(12)
-G = nx.lollipop_graph(30, 10)
-# pos = nx.spring_layout(G, dim=2, k=2/math.sqrt(30), scale=800, iterations=100)
-pos = forceatlas2_layout(G, iterations=100)
-# pos = nx.shell_layout(G, dim=2)
-# random_layout fails on exporting??
-# pos = nx.random_layout(G, dim=2)
-# pos = nx.spectral_layout(G, dim=2)
-json_dump = json_graph.node_link_data(G)
+G = Graph.GRG(30, 0.2)
+layout = G.layout("kk")
 
-for n in json_dump['nodes']:
-    n['id'] = int(n['id'])
-    n['x'] = pos[n['id']][0] * 800
-    n['y'] = pos[n['id']][1] * 800
-    n['group'] = random.randint(1, 6)
+# Iterate over the list of Nodes (Vertex)
+nodes = []
+for n in G.vs:
+    nodes.append({'id': n.index, 'group': random.randint(1, 6), 'x': 100*layout[n.index][0], 'y': 100*layout[n.index][1]})
 
-json_dump['edges'] = [{'to': l['target'], 'from': l['source'], 'weight': random.randint(1, 5)} for l in json_dump['links']]
+edges = []
+for e in G.es:
+    edges.append({'to': e.target, 'from': e.source, 'weight': random.randint(1, 5)})
 
-print "Nodes = ", json_dump['nodes']
+print "Nodes = ", nodes
 with open('data/fixed-network.js', 'wb') as js_file:
-    js_file.write("var nodes = {};\n".format(json.dumps(json_dump['nodes'])))
-    js_file.write("var edges = {};\n".format(json.dumps(json_dump['edges'])))
+    js_file.write("var nodes = {};\n".format(json.dumps(nodes)))
+    js_file.write("var edges = {};\n".format(json.dumps(edges)))
 
-# print json.dumps(json_dump, indent=2)
+G.write_svg('fixed-layout.svg', layout=layout)
+
