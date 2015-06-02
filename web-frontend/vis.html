@@ -12,23 +12,6 @@
     <script src="/scripts/vis.min.js"></script>
     <script src="/scripts/jquery-1.10.2.js"></script>
   <script type="text/javascript">
-  // create an array with nodes
-  var nodes = [
-    {id: 1, label: 'Node 1', value: 10, group: 'alpha'},
-    {id: 2, label: 'Node 2', value: 15, group: 'beta'},
-    {id: 3, label: 'Node 3', value: 20, group: 'alpha'},
-    {id: 4, label: 'Node 4', value: 25, group: 'beta'},
-    {id: 5, label: 'Node 5', value: 30, group: 'alpha'}
-  ];
-
-  // create an array with edges
-  var edges = [
-    {from: 1, to: 2},
-    {from: 1, to: 3},
-    {from: 2, to: 4},
-    {from: 2, to: 5}
-  ];
-
   function onDataReceived(dataset) {
       // create a network
       var container = document.getElementById('bgpvis');
@@ -47,9 +30,9 @@
             hoverSelectedEdges: true,
             navigationButtons: true,
             zoomView: true,
-            selectConnectedEdges: false,
-            selectable: false,
-            tooltipDelay: 150
+            selectConnectedEdges: true,
+            selectable: true,
+            tooltipDelay: 100
         },
         nodes: {
           shape: 'dot',
