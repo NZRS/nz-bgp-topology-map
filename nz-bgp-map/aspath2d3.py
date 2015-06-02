@@ -7,6 +7,7 @@ import sys
 from IPy import IP, IPSet
 from time import gmtime, strftime, localtime
 from scales import Scale
+from igraph import *
 
 def substitute_as(asn):
     if as_sub_list.has_key(asn):
@@ -42,7 +43,8 @@ def calculate_ipset_weight(s):
     return w
 
 def gen_title(n):
-    return u"<p><b>{0}<br/></b>ASN {1}</br>{2} peer(s)</p>".format(n['name'], n['id'], n['degree'])
+    return u"<p><b>{0}<br/></b>ASN {1}</br>{2} peer{3}</p>".format(n['name'], n['id'], n['degree'],
+                                                                  's' if n['degree'] > 1 else '')
 
 # Preload the list of substitute ASNs
 with open('../data/substitute-as.json', 'rb') as sub_as_file:
@@ -177,14 +179,3 @@ del graph_json_dump['links']
 json.dump(json_dump, open('../data/nz-bgp-map.json', 'w'))
 json.dump(graph_json_dump, open('../data/nz-bgp-map.alchemy.json', 'w'))
 
-# Preparing for vis.js format
-vis = dict()
-vis['nodes'] = [dict(id=n['id'], title=gen_title(n), value=n['degree'], group=n['country'])
-                for n in graph_json_dump['nodes']]
-vis['edges'] = []
-edge_scale = Scale([1, 23000], [1, 20], 0.5)
-for e in graph_json_dump['edges']:
-    new_edge = dict(to=e['target'], color=class2color(e['_class']), width=edge_scale.get_value(e['_weight']))
-    new_edge['from'] = e['source']
-    vis['edges'].append(new_edge)
-json.dump(vis, open('../data/nz-bgp-map.vis.json', 'w'))

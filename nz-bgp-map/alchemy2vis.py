@@ -49,7 +49,7 @@ for n in VG.vs:
                       'x': 100*layout[n.index][0], 'y': 100*layout[n.index][1]})
 
 for e in VG.es:
-    vis_edges.append({'to': e.target, 'from': e.source, 'color': e['color'], 'width': e['width']})
+    vis_edges.append({'to': VG.vs[e.target]['name'], 'from': VG.vs[e.source]['name'], 'color': e['color'], 'width': e['width']})
 
 
 json.dump({'nodes': vis_nodes, 'edges': vis_edges}, open('../data/nz-bgp-map.vis.json', 'w'))

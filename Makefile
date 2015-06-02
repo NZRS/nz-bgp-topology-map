@@ -17,12 +17,15 @@ LOCAL_DIR ?= /var/www/visjs
 DRUPAL_SERVER = srsov-drupal1
 DRUPAL_DIR = bgp-map
 
-data/nz-bgp-map.json data/nz-bgp-map.alchemy.json data/nz-bgp-map.vis.json: nz-bgp-map/aspath2d3.py data/nzix.json \
+data/nz-bgp-map.json data/nz-bgp-map.alchemy.json: nz-bgp-map/aspath2d3.py data/nzix.json \
                         data/nz-as-rels.json \
                         data/as-from-rir.tsv \
                         data/substitute-as.json \
                         data/as-info.json
-	cd nz-bgp-map && /usr/bin/python aspath2d3.py && cd ..
+	cd nz-bgp-map && python aspath2d3.py && cd ..
+
+data/nz-bgp-map.vis.json: nz-bgp-map/alchemy2vis.py data/nz-bgp-map.alchemy.json
+	cd nz-bgp-map && python alchemy2vis.py && cd ..
 
 data/nzix.json: nzix-bgp-tables/parse-bgp-txt.py $(NZIX_BGP_REQS)
 	cd nzix-bgp-tables && /usr/bin/python ./parse-bgp-txt.py $(NZIX_BGP_FILES) && cd ..
@@ -86,6 +89,15 @@ deploy-test: data/nz-bgp-map.vis.json web-frontend/vis.html
 	rsync -a bower_components/vis/dist/vis.map ${LOCAL_DIR}/scripts/
 	rsync -a bower_components/vis/dist/vis.min.css ${LOCAL_DIR}/styles/
 	rsync -a bower_components/vis/dist/img ${LOCAL_DIR}/styles/
+
+data/fixed-network.js: calculate-layout.py
+	python calculate-layout.py
+
+deploy-fixed: data/fixed-network.js web-frontend/fixed-layout.html
+	# Following to lines are just for testing
+	rsync -a web-frontend/fixed-layout.html ${LOCAL_DIR}/
+	rsync -a data/fixed-network.js ${LOCAL_DIR}/misc/data/
+
 
 deploy-prod: data/nz-bgp-map.json web-frontend/alchemy.html
 	ssh ${PROD_SERVER} 'mkdir -p ${PROD_DIR} && cd ${PROD_DIR} && mkdir -p misc/data d3 scripts styles images'
