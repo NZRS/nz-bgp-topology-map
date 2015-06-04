@@ -6,7 +6,8 @@
   <script type="text/javascript" src="/scripts/vis.min.js"></script>
   <link type="text/css" rel="stylesheet" href="/styles/vis.min.css">
 
-  <script src="/misc/data/fixed-network.js"></script>
+    <script src="/scripts/parseColor.js"></script>
+    <script src="/misc/data/fixed-network.js"></script>
   <style type="text/css">
     #mynetwork {
       height: 800px;
@@ -38,11 +39,6 @@
         height: '100%',
         nodes: {
           shape: 'dot',
-          fontColor: 'black',
-          scaleFontWithValue: true,
-          fontDrawThreshold: 10,
-          fontSizeMin: 10,
-          fontSizeMax: 20,
           scaling: {
             min: 5,
             max: 60
@@ -98,7 +94,6 @@
         hideEdgesOnDrag: true,
             dragNodes: false,
             hover: true,
-            hoverSelectedEdges: true,
             navigationButtons: true,
             zoomView: true,
             selectConnectedEdges: true,
@@ -134,7 +129,16 @@
           allNodes[nodeId].label = undefined;
         }
       }
+
+      // mark all edges as hard to see
+      for (var edgeId in allEdges) {
+        // Save the color for restoration later
+        allEdges[edgeId].hiddenColor = allEdges[edgeId].color
+        allEdges[edgeId].color = 'rgba(200,200,200,0.5)';
+      }
+
       var connectedNodes = network.getConnectedNodes(selectedNode);
+      var directEdges = network.getConnectedEdges(selectedNode);
       var allConnectedNodes = [];
 
       // get the second degree nodes
@@ -168,6 +172,16 @@
         allNodes[selectedNode].label = allNodes[selectedNode].hiddenLabel;
         allNodes[selectedNode].hiddenLabel = undefined;
       }
+
+      // The direct edges get their color back
+      for (i = 0; i < directEdges.length; i++) {
+        if (allEdges[directEdges[i]].hiddenColor !== undefined) {
+            // Change the alpha of the color
+            var color_values = parseColor(allEdges[directEdges[i]].hiddenColor);
+            color_values[3] = 1.0;
+            allEdges[directEdges[i]].color = "rgba(" + color_values.join() + ")";
+        }
+      }
     }
     else if (highlightActive === true) {
       // reset all nodes
@@ -177,6 +191,14 @@
           allNodes[nodeId].label = allNodes[nodeId].hiddenLabel;
           allNodes[nodeId].hiddenLabel = undefined;
         }
+      }
+
+      // reset all edges
+      for (var edgeId in allEdges) {
+          if (allEdges[edgeId].hiddenColor !== undefined) {
+              allEdges[edgeId].color = allEdges[edgeId].hiddenColor;
+              allEdges[edgeId].hiddenColor = undefined;
+          }
       }
       highlightActive = false
     }
@@ -189,6 +211,15 @@
       }
     }
     nodesDataset.update(updateArray);
+
+    // Reuse the same array for the Edges
+    updateArray = [];
+    for (edgeId in allEdges) {
+      if (allEdges.hasOwnProperty(edgeId)) {
+        updateArray.push(allEdges[edgeId]);
+      }
+    }
+    edgesDataset.update(updateArray);
   }
 
   redrawAll()
