@@ -90,8 +90,8 @@ deploy-test: data/nz-bgp-map.vis.json web-frontend/vis.html
 	rsync -a bower_components/vis/dist/vis.min.css ${LOCAL_DIR}/styles/
 	rsync -a bower_components/vis/dist/img ${LOCAL_DIR}/styles/
 
-data/fixed-network.js: calculate-layout.py
-	python calculate-layout.py
+data/fixed-network.js: nz-bgp-map/alchemy2vis.py
+	cd nz-bgp-map && python alchemy2vis.py && cd ..
 
 deploy-fixed: data/fixed-network.js web-frontend/fixed-layout.html
 	# Following to lines are just for testing

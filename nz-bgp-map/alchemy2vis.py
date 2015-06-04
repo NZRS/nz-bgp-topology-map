@@ -5,11 +5,11 @@ import json
 from scales import Scale
 
 _class2color = {
-    'p2p': 'orange',
-    'p2c': 'lightgreen',
-    'c2p': 'lightgreen',
-    's2s': 'red',
-    'unk': 'cyan'
+    'p2p': 'rgba(255,165,0,0.4)',
+    'p2c': 'rgba(144,238,144,0.4)',
+    'c2p': 'rgba(144,238,144,0.4)',
+    's2s': 'rgba(255,0,0,0.4)',
+    'unk': 'rgba(0,0,255,0.4)'
 }
 
 def class2color(edge_class):
@@ -40,16 +40,21 @@ for e in graph_json_dump['edges']:
     VG.add_edge(n_idx[e['source']], n_idx[e['target']], color=class2color(e['_class']), width=edge_scale.get_value(e['_weight']))
 
 
-layout = VG.layout("kk")
+layout = VG.layout("kk", dim=2)
 
 vis_nodes = []
 vis_edges = []
 for n in VG.vs:
     vis_nodes.append({'id': n['name'], 'group': n['group'], 'value': n['value'], 'title': n['title'],
-                      'x': 100*layout[n.index][0], 'y': 100*layout[n.index][1]})
+                      'x': 200*layout[n.index][0], 'y': 200*layout[n.index][1]})
 
 for e in VG.es:
     vis_edges.append({'to': VG.vs[e.target]['name'], 'from': VG.vs[e.source]['name'], 'color': e['color'], 'width': e['width']})
 
 
 json.dump({'nodes': vis_nodes, 'edges': vis_edges}, open('../data/nz-bgp-map.vis.json', 'w'))
+
+with open('../data/fixed-network.js', 'wb') as js_file:
+    js_file.write("var nodes = {};\n".format(json.dumps(vis_nodes)))
+    js_file.write("var edges = {};\n".format(json.dumps(vis_edges)))
+
