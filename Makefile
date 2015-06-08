@@ -22,10 +22,10 @@ data/nz-bgp-map.json: nz-bgp-map/aspath2d3.py data/nzix.json \
                         data/as-from-rir.tsv \
                         data/substitute-as.json \
                         data/as-info.json
-	cd nz-bgp-map && /usr/bin/python aspath2d3.py && cd ..
+	cd nz-bgp-map && python aspath2d3.py && cd ..
 
 data/nzix.json: nzix-bgp-tables/parse-bgp-txt.py $(NZIX_BGP_REQS)
-	cd nzix-bgp-tables && /usr/bin/python ./parse-bgp-txt.py $(NZIX_BGP_FILES) && cd ..
+	cd nzix-bgp-tables && python ./parse-bgp-txt.py $(NZIX_BGP_FILES) && cd ..
 
 define NZIX_BGP_template
 nzix-bgp-tables/${1}.txt: nzix-bgp-tables/fetch-bgp-tables.sh
@@ -34,7 +34,11 @@ endef
 
 $(foreach rs,${NZIX_ROUTESERVERS},$(eval $(call NZIX_BGP_template,${rs})))
 
-data/prefix-aspath.txt: rv-bgp-tables/mrt2txt.sh $(RV_MRT_FILES)
+data/.rv_downloaded: rv-bgp-tables/download-rv.sh
+	cd rv-bgp-tables && bash download-rv.sh && cd ..
+	touch $@
+
+data/prefix-aspath.txt: rv-bgp-tables/mrt2txt.sh $(RV_MRT_FILES) data/.rv_downloaded
 	bash rv-bgp-tables/mrt2txt.sh $(RV_MRT_FILES)
 
 as-rank/$(REL_DAY).as-rel.txt:
@@ -46,17 +50,17 @@ data/nz-as-rels.json: as-relationships/get-as-relationships.py \
                             data/nzix.json \
                             as-rank/$(REL_DAY).as-rel.txt \
                             data/local-as-rel-info.csv
-	/usr/bin/python as-relationships/get-as-relationships.py \
+	python as-relationships/get-as-relationships.py \
         as-rank/$(REL_DAY).as-rel.txt data/local-as-rel-info.csv
 
 data/rv-nz-aspath.json: data/prefix-aspath.txt \
         data/as-from-rir.tsv \
         nz-trace-destinations/find-nz-prefixes.py
-	cd nz-trace-destinations && /usr/bin/python find-nz-prefixes.py && cd ..
+	cd nz-trace-destinations && python find-nz-prefixes.py && cd ..
 
 data/as-from-rir.tsv: nz-trace-destinations/list-nz-as.py \
         nz-trace-destinations/delegated-apnic-latest
-	cd nz-trace-destinations && /usr/bin/python list-nz-as.py && cd ..
+	cd nz-trace-destinations && python list-nz-as.py && cd ..
 
 nz-trace-destinations/delegated-apnic-latest:
 	cd nz-trace-destinations && wget -q -N \
@@ -72,7 +76,7 @@ clean-nzix:
 	rm -f nzix-bgp-tables/*.txt
 
 data/as-info.json: data/as-list.txt nz-bgp-map/fetch-as-names.py
-	cd nz-bgp-map && /usr/bin/python fetch-as-names.py --input ../data/as-list.txt --output ../data/as-info.json && cd ..
+	cd nz-bgp-map && python fetch-as-names.py --input ../data/as-list.txt --output ../data/as-info.json && cd ..
 
 deploy-test: data/nz-bgp-map.alchemy.json web-frontend/alchemy.html
 	cd ${LOCAL_DIR} && mkdir -p misc/data d3 scripts styles images

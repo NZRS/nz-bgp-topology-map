@@ -67,12 +67,17 @@ if __name__ == '__main__':
     with open(args.input, 'rb') as name_file:
         for line in name_file:
             asn = line.rstrip()
-            if int(asn) in range(64512, 65534):
-                # These are private ASN
-                as_info[asn] = dict(country='priv', short_descr='PRIVATE',
-                    long_descr='PRIVATE 16-bit ASN')
-            else:
-                domains.append( [ "as{0}.asn.cymru.com".format(asn), resolver, asn ])
+            try:
+                if int(asn) in range(64512, 65534):
+                    # These are private ASN
+                    as_info[asn] = dict(country='priv', short_descr='PRIVATE',
+                        long_descr='PRIVATE 16-bit ASN')
+                else:
+                    domains.append( [ "as{0}.asn.cymru.com".format(asn), resolver, asn ])
+            except ValueError:
+                # The asn provided is not a number
+                print "AS {} is not a number, skipping".format(asn)
+                pass
 
     finished = do_parallel_dns(domains, NUM_WORKERS, send_dns_query)
 

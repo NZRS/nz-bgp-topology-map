@@ -7,5 +7,8 @@ for url in `cat sources.txt`; do
     base=$(echo $url | cut -d/ -f4)
     echo $base
     mkdir -p $base
-    wget -O - "$url/$(echo $DAY |cut -c1-4).$(echo $DAY|cut -c5-6)/RIBS/rib.$DAY.0000.bz2" > $base/rib.$DAY.0000.bz2
+    OFILE="$base/rib.$DAY.0000.bz2"
+    if [ ! -f "$OFILE" ]; then
+        wget -O "$OFILE" "$url/$(echo $DAY |cut -c1-4).$(echo $DAY|cut -c5-6)/RIBS/rib.$DAY.0000.bz2"
+    fi
 done

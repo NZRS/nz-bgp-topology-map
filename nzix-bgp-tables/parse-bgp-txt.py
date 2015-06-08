@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import re
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict, defaultdict, Counter
 import json
 import sys
 from IPy import IP
@@ -51,6 +51,14 @@ def prepare_route(prefix, ix_as, aspath_str):
     aspath = list(OrderedDict.fromkeys(asdot2asplain(aspath_str.rstrip().split(' '))))
     # Remove the last element, it's the status of the prefix
     aspath.pop()
+    # The origin AS (last in the list) could be actually a Multi-AS Origin that doesn't help us much.
+    # If that's the case, we'll use the following value
+    try:
+        int(aspath[-1])
+    except ValueError:
+        # The origin AS is not a number, remove it from the list
+        aspath.pop()
+
     # Append the ix_as to the beginning of the aspath
     aspath.insert(0, ix_as)
     if re.search('/', prefix) == None:
@@ -77,7 +85,7 @@ def relevant_as(prefix):
 
 fieldwidths = (3, 3, 17, 17, 24, 80)
 parse = make_parser(fieldwidths)
-path_count = {}
+path_count = Counter()
 
 # Read the file with IX info
 with open('../data/ix-info.json', 'rb') as ix_info_file:

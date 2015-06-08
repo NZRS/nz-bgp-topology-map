@@ -109,10 +109,11 @@ for node_deg in G.degree_iter():
         G.node[asn]['country'] = as_info[asn]['country'] if as_info[asn]['country'] in ['NZ', 'AU', 'priv'] else 'other'
 
     try:
-        country = G.node[ asn ]['country'] 
+        country = G.node[asn]['country']
     except KeyError:
         sys.stderr.write('ASN {0} without country??\n'.format(asn))
         country = 'unknown'
+        G.node[asn]['country'] = country
 
     if country not in degree_set:
         degree_set[country] = set()
