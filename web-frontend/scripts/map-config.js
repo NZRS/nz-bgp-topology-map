@@ -46,7 +46,14 @@ var config = {
     nodeCaption: function(n, i) { if (i == 0) { return n.name; } else { return "(" + n.id + ")"; }},
     nodeRadius: function(n) { return radius(n.degree); },
     nodeStrike: function(n) { return border(n.degree); },
-    nodeColour: function(n) { return node_color[n.country](n.degree); },
+    nodeColour: function(n) {
+        if (node_color[n.country] !== undefined) {
+            return node_color[n.country](n.degree);
+        }
+        else {
+            return 'blue';  /* Treat nodes with unknown group as private */
+        }
+    },
     linkDistance: function(edge, k) { return 15; },
     preLoad: function() {
         // There is extra info in the input file we could use to

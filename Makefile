@@ -13,7 +13,7 @@ REL_DAY=20141001
 
 PROD_SERVER ?= bgp-map
 PROD_DIR ?= /usr/share/nginx/bgp-map
-LOCAL_DIR ?= /var/www
+LOCAL_DIR ?= /var/www/bgp-test
 DRUPAL_SERVER = srsov-drupal1
 DRUPAL_DIR = bgp-map
 
@@ -79,14 +79,14 @@ data/as-info.json: data/as-list.txt nz-bgp-map/fetch-as-names.py
 	cd nz-bgp-map && python fetch-as-names.py --input ../data/as-list.txt --output ../data/as-info.json && cd ..
 
 deploy-test: data/nz-bgp-map.alchemy.json web-frontend/alchemy.html
-	cd ${LOCAL_DIR} && mkdir -p misc/data d3 scripts styles images
+	mkdir -p ${LOCAL_DIR} && cd ${LOCAL_DIR} && mkdir -p misc/data d3 scripts styles images && cd -
 	rsync -a data/nz-bgp-map.alchemy.json ${LOCAL_DIR}/misc/data
 	rsync -a web-frontend/alchemy.html ${LOCAL_DIR}/index.html
 	rsync -a web-frontend/credits.html ${LOCAL_DIR}/
 	rsync -a web-frontend/styles/* ${LOCAL_DIR}/styles/
 	rsync -a web-frontend/scripts/* ${LOCAL_DIR}/scripts/
 	rsync -a web-frontend/images/* ${LOCAL_DIR}/images/
-	rsync -a web-frontend/images/favicon.png ${LOCAL_DIR}/
+	rsync -a web-frontend/images/favicon.ico ${LOCAL_DIR}/
 
 deploy-prod: data/nz-bgp-map.json web-frontend/alchemy.html
 	ssh ${PROD_SERVER} 'mkdir -p ${PROD_DIR} && cd ${PROD_DIR} && mkdir -p misc/data d3 scripts styles images'

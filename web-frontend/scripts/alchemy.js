@@ -79,7 +79,7 @@
           .attr("id", "brand")
           .attr("class", "col-md-12")
           .append("div")
-            .attr("id", "brand-title");
+            .attr("id", "brand-title")
               .html("<span>NZ BGP Topology Map</span>");
       d3.select("#brand")   
           .append("div")
