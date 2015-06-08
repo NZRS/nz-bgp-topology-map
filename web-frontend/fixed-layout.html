@@ -178,8 +178,10 @@
         if (allEdges[directEdges[i]].hiddenColor !== undefined) {
             // Change the alpha of the color
             var color_values = parseColor(allEdges[directEdges[i]].hiddenColor);
+            allEdges[directEdges[i]].origAlpha = color_values[3];
             color_values[3] = 1.0;
             allEdges[directEdges[i]].color = "rgba(" + color_values.join() + ")";
+            allEdges[directEdges[i]].hiddenColor = undefined
         }
       }
     }
@@ -197,7 +199,13 @@
       for (var edgeId in allEdges) {
           if (allEdges[edgeId].hiddenColor !== undefined) {
               allEdges[edgeId].color = allEdges[edgeId].hiddenColor;
-              allEdges[edgeId].hiddenColor = undefined;
+          }
+          else {
+            // Need to flip the alpha
+            // console.log("Please change alpha");
+            var color_values = parseColor(allEdges[edgeId].color);
+            color_values[3] =  allEdges[edgeId].origAlpha;
+            allEdges[edgeId].color = "rgba(" + color_values.join() + ")";
           }
       }
       highlightActive = false

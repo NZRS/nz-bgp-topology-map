@@ -30,7 +30,7 @@ idx = 0
 n_idx = {}
 for n in graph_json_dump['nodes']:
     n_idx[n['id']] = VG.vcount()
-    VG.add_vertex(name=n['id'], title=gen_title(n), value=n['degree'], group=n['country'])
+    VG.add_vertex(name=n['id'], label=n['name'], title=gen_title(n), value=n['degree'], group=n['country'])
 
 edge_scale = Scale([1, 23000], [1, 20], 0.5)
 for e in graph_json_dump['edges']:
@@ -46,7 +46,7 @@ vis_nodes = []
 vis_edges = []
 for n in VG.vs:
     vis_nodes.append({'id': n['name'], 'group': n['group'], 'value': n['value'], 'title': n['title'],
-                      'x': 200*layout[n.index][0], 'y': 200*layout[n.index][1]})
+                      'label': n['label'], 'x': 200*layout[n.index][0], 'y': 200*layout[n.index][1]})
 
 for e in VG.es:
     vis_edges.append({'to': VG.vs[e.target]['name'], 'from': VG.vs[e.source]['name'], 'color': e['color'], 'width': e['width']})
