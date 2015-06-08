@@ -1,8 +1,0 @@
-mrt2txt has as pre-requisite bgpdump
-(https://bitbucket.org/ripencc/bgpdump/wiki/Home).
-
-For Mac OS X, you can
-- hg clone https://bitbucket.org/ripencc/bgpdump
-- cd bgpdump
-- bash bootstrap.sh
-- make install

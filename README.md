@@ -32,10 +32,36 @@ the code expects to find the script to read MRT at
 
 ## Processing
 
+To produce the map, simply execute
+
+```
+make
+```
+
 This code will download the full BGP dumps from RouteViews available,
 that will take time and bandwidth. Once the files are downloaded, it
 will extract relevant AS Paths from the data, which takes more time.
 Overall the initial data fetching and munging can take easily 30 minutes
 or more.
 
+To have your own version of the visualization, you can execute
+
+```
+make deploy-test
+```
+
+that will put the necessary files in one directory to be served by a web server.
+If you want to change the destination of the files, edit *Makefile*
+
+
+## TODO
+
+There is always ways to improve code, documentation and the data. This is what we have in mind
+
+- Remove some of the shell scripts and use pure Python solutions
+- Separate the visualization framework from the setup and branding. Currently there are our own changes to Alchemy
+  making things difficult to maintain.
+- Test a different visualization framework.
+- Prune the resulting graph to remove Autonomous System that don't add much value, like foreign stub ASes
+- Generalize this framework to produce relevant visualizations for any country, not only NZ.
 
