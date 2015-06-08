@@ -79,9 +79,8 @@
           .attr("id", "brand")
           .attr("class", "col-md-12")
           .append("div")
-            .attr("id", "brand-title")
-              .html("<span>NZ BGP Topology Map</span>");
-      d3.select("#brand")   
+            .attr("id", "brand-title");
+      d3.select("#brand")
           .append("div")
             .attr("id", "brand-image")
               .html("<img height=\"80px\" src=\"/images/NZRS_Logo_white.png\"/>");
