@@ -58,7 +58,7 @@ for aspath in rv_paths['aspath']:
             print " ".join(deltas)
             pass
         else:
-            print "WTF with {}".format(aspath)
+            print "Unexpected result at {}".format(aspath)
 
 with open('unknown-rel.csv', 'w') as unk_rel_file:
     unk_out = csv.writer(unk_rel_file, lineterminator="\n")
