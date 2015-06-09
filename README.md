@@ -1,6 +1,7 @@
 # NZ BGP Topology Map
 
 *Author*: Sebastian Castro <sebastian@nzrs.net.nz>
+
 Copyright 2014-2015 NZRS Ltd
 
 This is a set of tools to produce a visualization of the New Zealand BGP
