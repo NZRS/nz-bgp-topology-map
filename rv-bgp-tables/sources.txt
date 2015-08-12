@@ -11,3 +11,7 @@ http://archive.routeviews.org/route-views.telxatl/bgpdata
 http://archive.routeviews.org/route-views.wide/bgpdata
 http://archive.routeviews.org/route-views.sydney/bgpdata
 http://archive.routeviews.org/route-views.saopaulo/bgpdata
+http://archive.routeviews.org/route-views.sg/bgpdata
+http://archive.routeviews.org/route-views.perth/bgpdata
+http://archive.routeviews.org/route-views.sfmix/bgpdata
+http://archive.routeviews.org/route-views.soxrs/bgpdata

@@ -1,0 +1,34 @@
+- name: route-views2
+  url: http://archive.routeviews.org/bgpdata
+- name: route-views3
+  url: http://archive.routeviews.org/route-views3/bgpdata
+- name: route-views4
+  url: http://archive.routeviews.org/route-views4/bgpdata
+- name: Equinix Ashburn
+  url: http://archive.routeviews.org/route-views.eqix/bgpdata
+- name: ISC (PAIX)
+  url: http://archive.routeviews.org/route-views.isc/bgpdata
+- name: KIXP
+  url: http://archive.routeviews.org/route-views.kixp/bgpdata
+- name: JINX
+  url: http://archive.routeviews.org/route-views.jinx/bgpdata
+- name: LINX
+  url: http://archive.routeviews.org/route-views.linx/bgpdata
+- name: NWAX
+  url: http://archive.routeviews.org/route-views.nwax/bgpdata
+- name: TEXATL
+  url: http://archive.routeviews.org/route-views.telxatl/bgpdata
+- name: DIXIE (WIDE)
+  url: http://archive.routeviews.org/route-views.wide/bgpdata
+- name: SYDNEY
+  url: http://archive.routeviews.org/route-views.sydney/bgpdata
+- name: Sao Paulo
+  url: http://archive.routeviews.org/route-views.saopaulo/bgpdata
+- name: Singapore
+  url: http://archive.routeviews.org/route-views.sg/bgpdata
+- name: Perth
+  url: http://archive.routeviews.org/route-views.perth/bgpdata
+- name: SFMIX
+  url: http://archive.routeviews.org/route-views.sfmix/bgpdata
+- name: SOXRS (Serbia)
+  url: http://archive.routeviews.org/route-views.soxrs/bgpdata
