@@ -54,7 +54,7 @@ endef
 
 $(foreach rs,${NZIX_ROUTESERVERS},$(eval $(call NZIX_BGP_template,${rs})))
 
-data/.rv_downloaded: rv-bgp-tables/download-rv.sh
+data/.rv_downloaded: rv-bgp-tables/download-rv.sh rv-bgp-tables/sources.txt
 	cd rv-bgp-tables && bash download-rv.sh && cd ..
 	touch $@
 
