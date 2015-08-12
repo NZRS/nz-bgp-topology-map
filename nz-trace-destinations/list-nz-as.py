@@ -30,12 +30,12 @@ with open('delegated-apnic-latest', 'rb') as csvfile:
     for row in csvin:
         if row[-1] == 'allocated':
             if row[2] == 'asn' and row[1] in as_country:
-                as_list[ row[3] ] = row[1]
-            if row[2] == 'ipv4' and row[1] == 'NZ':
+                as_list[row[3]] = row[1]
+            if row[2] == 'ipv4' and row[1] is as_country:
                 prefix = row[3]
                 mask = 32 - (int(row[4]) - 1).bit_length()
                 prefix = "{0}/{1}".format(row[3], mask)
-                prefix_list[ prefix ] = True
+                prefix_list[prefix] = True
 
 
 with open('../data/as-from-rir.tsv', 'wb') as tsvfile:

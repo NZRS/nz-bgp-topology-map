@@ -20,6 +20,8 @@ import re
 from collections import OrderedDict, defaultdict, Counter
 import json
 import sys
+import datetime
+import os
 from IPy import IP
 # shamelessly stolen from
 # http://stackoverflow.com/questions/4914008/efficient-way-of-parsing-fixed-width-files-in-python
@@ -111,23 +113,31 @@ with open('../data/ix-info.json', 'rb') as ix_info_file:
     for k in ix_info.keys():
         ix_name2as[ix_info[k]['name']] = k
 
-aspath_set = defaultdict(list)
+aspath_set = defaultdict(set)
+ix_data = []
 for ixfile in sys.argv[1:]:
+    file_date = datetime.datetime.fromtimestamp(os.path.getmtime(ixfile))
     with open(ixfile) as bgpdata:
 
         rs = ''
         prefixes = []
+        prefix_cnt = 0
         ix_name = ''
         ix_as = 0
 
         for line in bgpdata:
             res = re.match('\s+Router: (\S*)', line)
-            if res != None:
+            if res is not None:
                 rs = res.group(1)
                 # The routeserver looks like rs1.ape.nzix.net, extract the
                 # meaningful label to map to the corresponding AS number
                 ix_name = rs.split('.')[1].upper()
                 ix_as = ix_name2as[ix_name]
+
+            # Extract the number of prefixes and save it as metadata
+            res = re.match('^Total number of prefixes (\d+)', line)
+            if res is not None:
+                prefix_cnt = int(res.group(1))
 
             fields = parse(line)
             if len(fields[1]) > 0 and fields[1][0] == '*':
@@ -157,8 +167,12 @@ for ixfile in sys.argv[1:]:
                     pass
 
         for p in prefixes:
-            aspath_set[p['aspath']].append(p['prefix'])
+            aspath_set[p['aspath']].add(p['prefix'])
+        ix_data.append({'ix_name': ix_name, 'date': file_date.ctime(),
+                        'aspath': [{'prefixes': list(prefixes), 'path': path.split(' ')}
+                                   for path, prefixes in aspath_set.iteritems()]})
 
 with open('../data/nzix.json', 'wb') as ixfile:
-    json.dump(dict(aspath=[dict(prefixes=prefixes, path=path.split(' ')) for path, prefixes in aspath_set.iteritems()]), ixfile)
+    # json.dump(dict(aspath=[dict(prefixes=prefixes, path=path.split(' ')) for path, prefixes in aspath_set.iteritems()]), ixfile)
+    json.dump(ix_data, ixfile)
 
