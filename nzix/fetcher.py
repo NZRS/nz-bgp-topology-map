@@ -93,7 +93,7 @@ def get_ix_view():
     aspath_set = defaultdict(set)
 
     # Read the existing information about IXs we have
-    with open('data/ix-info.json') as f:
+    with open('conf/ix-info.json') as f:
         ix_data = json.load(f)
 
     # Collect data from the NZIX route servers

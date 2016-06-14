@@ -16,19 +16,28 @@
 #    License along with 'NZ BGP Topology Map'.  If not, see
 #    <http://www.gnu.org/licenses/>.
 
-import csv
+import re
 
 
 class AsRelationship:
     as_rel = {}
+    tier1 = []
+    _rel2class = {'-': 'p2p',
+                  '>': 'p2c',
+                  '<': 'c2p',
+                  '=': 's2s',
+                  '?': 'unk'}
 
     def __init__(self, rel_file=None):
         with open(rel_file, 'r') as as_rel_file:
-            as_rel_csv = csv.reader(filter(lambda row: row[0] != '#',
-                                           as_rel_file), delimiter="|")
-            for as_rel_entry in as_rel_csv:
-                [prov_as, cust_as, rel] = as_rel_entry
-                self.as_rel["%s+%s" % (prov_as, cust_as)] = int(rel)
+            for line in as_rel_file.readlines():
+                if re.search('^# inferred clique:', line):
+                    self.tier1 = line.rstrip("\n").split(':')[-1].split(' ')
+                elif re.search('^#', line):
+                    continue
+                else:
+                    [prov_as, cust_as, rel] = line.rstrip("\n").split('|')
+                    self.as_rel["%s+%s" % (prov_as, cust_as)] = int(rel)
 
     def rel_char(self, src, dst):
         rv = '?'
@@ -55,3 +64,11 @@ class AsRelationship:
 
         return rv
 
+    def rel2class(self, src, dst):
+        return self._rel2class[self.rel_char(src, dst)]
+
+    def peering(self):
+        return self._rel2class['-']
+
+    def tier1_asn(self):
+        return self.tier1

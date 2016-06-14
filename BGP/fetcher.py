@@ -59,7 +59,7 @@ def prefix_in_country(rt, p):
         if rt.search_best(network=net, masklen=int(mask)):
             return True
     except ValueError:
-        print "ERR: prefix %s caused exception" % p
+        print("ERR: prefix %s caused exception" % p)
 
     return False
 
@@ -91,7 +91,7 @@ def get_bgp_view():
     end_t = int((now + timedelta(minutes=10) - epoch).total_seconds())
     # start_t = int((now - timedelta(hours=12) - epoch).total_seconds())
     # end_t = int((now - timedelta(hours=10) - epoch).total_seconds())
-    print "Time interval %s to %s" % (start_t, end_t)
+    print("Time interval %s to %s" % (start_t, end_t))
     stream.add_interval_filter(start_t, end_t)
 
     # Set up the progress bar

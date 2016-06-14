@@ -5,19 +5,39 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 import bs4
 import re
 from collections import defaultdict
+import json
 
 
-def get_aspath(l):
-    aspath = '64496 ' + l.split(':')[-1].lstrip()
+def get_my_asn():
+    with open('conf/ix-info.json') as f:
+        ix_info = json.load(f)
+
+    for ix in ix_info:
+        if ix_info[ix]['name'] == 'Mega AKL-IX':
+            return ix
+
+    return None
+
+
+def get_aspath(l, my_as):
+    aspath = my_as + " " + l.split(':')[-1].lstrip()
 
     return aspath
 
 
+def path_elems(p):
+    return [e for e in p.split(' ') if re.search('^\d+$', e)]
+
+
 def get_ix_view(verbose=False):
+    # Read the ASN I should be using from configuration
+    my_asn = get_my_asn()
+
     lg_url = 'https://lg.megaport.com'
     user_agent = 'NZRS BGP Topology Map Generator. http://bgp.topology.net.nz'
 
-    # BGP Summary for getting all the peers
+    # BGP Summary for getting all the peers. 125 is the Auckland Route Server
+    #  for Megaport
     bgp_summary = {'option': 'BGP Summary',
                    'variable': '',
                    'router': '125',
@@ -58,11 +78,12 @@ def get_ix_view(verbose=False):
             for l in p.get_text().split("\n"):
                 if len(l) > 0 and l[0] == "\t":  # Indented line
                     if re.search('BGP.as_path', l):
-                        aspath_set[get_aspath(l)].add(prefix)
+                        aspath_set[get_aspath(l, my_asn)].add(prefix)
                 else:
                     prefix = l.split(' ')[0]
 
-    return [dict(prefixes=list(prefixes), path=path.split(' ')) for path, prefixes in aspath_set.iteritems()]
+    return [{'prefixes': list(prefixes), 'path': path_elems(path)}
+            for path, prefixes in aspath_set.iteritems()]
 
 
 if __name__ == "__main__":
