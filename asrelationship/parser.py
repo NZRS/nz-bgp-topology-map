@@ -28,6 +28,12 @@ class AsRelationship:
                   '=': 's2s',
                   '?': 'unk'}
 
+    _class2color = {'p2p': 'red',
+                    'p2c': 'green',
+                    'c2p': 'green',
+                    's2s': 'yellow',
+                    'unk': 'magenta'}
+
     def __init__(self, rel_file=None):
         with open(rel_file, 'r') as as_rel_file:
             for line in as_rel_file.readlines():
@@ -66,6 +72,9 @@ class AsRelationship:
 
     def rel2class(self, src, dst):
         return self._rel2class[self.rel_char(src, dst)]
+
+    def class2color(self, c):
+        return self._class2color[c]
 
     def peering(self):
         return self._rel2class['-']

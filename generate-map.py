@@ -8,10 +8,18 @@ from IPy import IP, IPSet
 import networkx as nx
 from networkx.readwrite import json_graph
 import asn_name_lookup
+import math
 
 
-verbose = True
-refresh = 'none'
+verbose = False
+refresh = 'nzix'
+
+
+def normalize_weight(w):
+    if w < 1:
+        return 1
+    else:
+        return math.sqrt(w)
 
 
 def calculate_ipset_weight(s):
@@ -86,6 +94,7 @@ for view in [nzix, megaport_ix, global_view]:
             else:
                 path_class = as_rel.rel2class(path[i], path[i+1])
 
+            path_color = as_rel.class2color(path_class)
             if verbose:
                 print("Path %s - %s: %s %s" % (path[i], path[i+1],
                                                path_class, w))
@@ -101,8 +110,10 @@ asn_names = s.lookup_many([n for n in G.nodes_iter()])
 with open('as-names.json', 'wb') as f:
     json.dump(asn_names, f)
 
+degree_list = []
 for asn, degree in G.degree_iter():
     G.node[asn]['degree'] = degree
+    degree_list.append(degree)
     if asn in ix_info:
         G.node[asn]['group'] = 'IX'
         G.node[asn]['name'] = ix_info[asn]['name']
@@ -111,12 +122,38 @@ for asn, degree in G.degree_iter():
         G.node[asn]['group'] = 'Tier1'
         G.node[asn]['name'] = asn_names[asn]['short_descr']
         G.node[asn]['descr'] = asn_names[asn]['long_descr']
+    elif asn in asn_names and asn_names[asn]['short_descr'] == 'PRIVATE':
+        G.node[asn]['group'] = 'priv'
+        G.node[asn]['name'] = asn_names[asn]['short_descr']
+        G.node[asn]['descr'] = asn_names[asn]['long_descr']
     else:
         G.node[asn]['group'] = country2group(asn_names[asn]['country'])
         G.node[asn]['name'] = asn_names[asn]['short_descr']
         G.node[asn]['descr'] = asn_names[asn]['long_descr']
 
 
-# Step 7, Save map representation in long format
+# Step 8, save a JSON representation
+graph_json = json_graph.node_link_data(G)
 with open('nz-bgp-map.json', 'wb') as f:
-    json.dump(json_graph.node_link_data(G), f, indent=2)
+    json.dump(graph_json, f, indent=2)
+
+# Step 9, save a JSON representation that can be used by the web frontend
+with open('nz-bgp-map.js', 'wb') as f:
+    nodes = [{'group': n['group'],
+              'id': n['id'],
+              'value': n['degree'],
+              'label': n['name'],
+              'description': n['descr']}
+             for n in graph_json['nodes']]
+    edges =[{'to': nodes[e['target']]['id'],
+             'from': nodes[e['source']]['id'],
+             'value': normalize_weight(e['w']),
+             'class': e['_class']} for e in graph_json['links']]
+    weight_range =[e['value'] for e in edges]
+
+    metadata = {'last_update': 'now',
+                'dr': [min(degree_list), max(degree_list)],
+                'wr': [min(weight_range), max(weight_range)]}
+    f.write("var edges=%s;\n" % json.dumps(edges))
+    f.write("var nodes=%s;\n" % json.dumps(nodes))
+    f.write("var metadata=%s\n" % json.dumps(metadata))

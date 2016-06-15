@@ -4,5 +4,6 @@
  "24388": { "name": "CHIX", "descr": "ChristChurch Internet eXchange"},
  "45279": { "name": "HIX", "descr": "Hamilton Internet eXchange"},
  "9281": { "name": "PNIX", "descr": "Palmerston North Internet eXchange"},
+ "24384": { "name": "DPE", "descr": "Dunedin Peering Exchange"},
  "64496": { "name": "Mega AKL-IX", "descr": "Megaport Auckland Exchange"}
 }

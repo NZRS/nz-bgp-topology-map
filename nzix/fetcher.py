@@ -85,6 +85,17 @@ def get_ix_as(name, ix_data):
     return "0"
 
 
+def path_elems(p):
+    pe = []
+    for e in p.split(' '):
+        # When there are AS-Maps, the element will look like {<ASN>}.
+        m = re.search('^\D*(\d+)\D*$', e)
+        if m:
+            pe.append(m.group(1))
+
+    return pe
+
+
 def get_ix_view():
     fieldwidths = (3, 17, 17, 24, 80)
     parse = make_parser(fieldwidths)
@@ -97,8 +108,8 @@ def get_ix_view():
         ix_data = json.load(f)
 
     # Collect data from the NZIX route servers
-    # RS_LIST = ['wix', 'chix', 'hix', 'pnix', 'ape']
-    RS_LIST = ['wix', 'chix']
+    RS_LIST = ['wix', 'chix', 'hix', 'dpe', 'ape']
+    # RS_LIST = ['wix', 'chix']
 
     for rs_location in RS_LIST:
         for rs_server in range(1, 3):
@@ -114,6 +125,7 @@ def get_ix_view():
             for p in soup.find_all('pre'):
                 prefixes = []
                 ix_as = get_ix_as(rs_location, ix_data)
+                print("IX ASN: %s" % ix_as)
                 prev_prefix = None
 
                 for line in p.get_text().split("\n"):
@@ -145,7 +157,8 @@ def get_ix_view():
                 for p in prefixes:
                     aspath_set[p['aspath']].add(p['prefix'])
 
-    return [dict(prefixes=list(prefixes), path=path.split(' ')) for path, prefixes in aspath_set.iteritems()]
+    return [{'prefixes': list(prefixes), 'path': path_elems(path)}
+            for path, prefixes in aspath_set.iteritems()]
 
 
 if __name__ == "__main__":
