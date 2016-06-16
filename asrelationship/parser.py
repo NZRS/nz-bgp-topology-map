@@ -28,11 +28,22 @@ class AsRelationship:
                   '=': 's2s',
                   '?': 'unk'}
 
-    _class2color = {'p2p': 'red',
-                    'p2c': 'green',
-                    'c2p': 'green',
-                    's2s': 'yellow',
-                    'unk': 'magenta'}
+    _class2color = {'p2p': {'color': 'rgba(255,165,0,0.3)',
+                            'highlight': 'rgba(255,165,0,1.0)'},
+                    'p2c': {'color': 'rgba(144,238,144,0.3)',
+                            'highlight': 'rgba(144,238,144,1.0)'},
+                    'c2p': {'color': 'rgba(144,238,144,0.3)',
+                            'highlight': 'rgba(144,238,144,1.0)'},
+                    's2s': {'color': 'rgba(255,0,0,0.3)',
+                            'highlight': 'rgba(255,0,0,1.0)'},
+                    'unk': {'color': 'rgba(0,255,255,0.3)',
+                            'highlight': 'rgba(0,255,255,1.0)'}}
+
+    _class2dash = {'p2p': False,
+                   'p2c': [8, 4],
+                   'c2p': [8, 4],
+                   's2s': [5, 5],
+                   'unk': [6, 2]}
 
     def __init__(self, rel_file=None):
         with open(rel_file, 'r') as as_rel_file:
@@ -75,6 +86,9 @@ class AsRelationship:
 
     def class2color(self, c):
         return self._class2color[c]
+
+    def class2dash(self, c):
+        return self._class2dash[c]
 
     def peering(self):
         return self._rel2class['-']

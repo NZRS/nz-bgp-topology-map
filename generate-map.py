@@ -12,22 +12,20 @@ import math
 
 
 verbose = False
-refresh = 'nzix'
+refresh = 'none'
 
 
-def normalize_weight(w):
+def calculate_weight(prefix_list):
+    # Calculate the aggregated list of networks observed
+    ipset = IPSet([IP(p) for p in prefix_list])
+    w = 0
+    for ip in ipset:
+        w += 2 ** (24-ip.prefixlen())
+
     if w < 1:
         return 1
     else:
         return math.sqrt(w)
-
-
-def calculate_ipset_weight(s):
-    w = 0
-    for ip in s:
-        w += 2 ** (24-ip.prefixlen())
-
-    return w
 
 
 def country2group(c):
@@ -80,9 +78,6 @@ with open('conf/ix-info.json') as f:
 G = nx.Graph()
 for view in [nzix, megaport_ix, global_view]:
     for entry in view:
-        # Calculate the aggregated list of networks observed
-        ipset = IPSet([IP(p) for p in entry['prefixes']])
-        w = calculate_ipset_weight(ipset)
         path = entry['path']
         for i in range(0, len(path)-1):
             # Exclude pre-pending and AS Path stuffing
@@ -94,14 +89,12 @@ for view in [nzix, megaport_ix, global_view]:
             else:
                 path_class = as_rel.rel2class(path[i], path[i+1])
 
-            path_color = as_rel.class2color(path_class)
             if verbose:
-                print("Path %s - %s: %s %s" % (path[i], path[i+1],
-                                               path_class, w))
+                print("Path %s - %s: %s" % (path[i], path[i+1], path_class))
             G.add_edge(path[i], path[i+1], _class=path_class)
-            if 'weight' not in G[path[i]][path[i+1]]:
-                G[path[i]][path[i+1]]['w'] = 0
-            G[path[i]][path[i+1]]['w'] += w
+            if 'prefixes' not in G[path[i]][path[i+1]]:
+                G[path[i]][path[i+1]]['prefixes'] = []
+            G[path[i]][path[i+1]]['prefixes'] += entry['prefixes']
 
 # Step 7, enrich the information in the graph
 s = asn_name_lookup.AsnNameLookupService()
@@ -145,11 +138,14 @@ with open('nz-bgp-map.js', 'wb') as f:
               'label': n['name'],
               'description': n['descr']}
              for n in graph_json['nodes']]
-    edges =[{'to': nodes[e['target']]['id'],
-             'from': nodes[e['source']]['id'],
-             'value': normalize_weight(e['w']),
-             'class': e['_class']} for e in graph_json['links']]
-    weight_range =[e['value'] for e in edges]
+    edges = [{'to': nodes[e['target']]['id'],
+              'from': nodes[e['source']]['id'],
+              'value': calculate_weight(e['prefixes']),
+              'class': e['_class'],
+              'color': as_rel.class2color(e['_class']),
+              'dashes': as_rel.class2dash(e['_class'])}
+             for e in graph_json['links']]
+    weight_range = [e['value'] for e in edges]
 
     metadata = {'last_update': 'now',
                 'dr': [min(degree_list), max(degree_list)],
